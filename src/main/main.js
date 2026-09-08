@@ -1,9 +1,11 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 
+const projectRoot = path.join(__dirname, "..", "..");
+
 // Only run in development
-require("electron-reload")(__dirname, {
-  electron: path.join(__dirname, "node_modules", ".bin", "electron"),
+require("electron-reload")(projectRoot, {
+  electron: path.join(projectRoot, "node_modules", ".bin", "electron"),
 });
 
 function createWindow() {
@@ -13,11 +15,11 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "..", "preload", "preload.js"),
     },
   });
 
-  win.loadFile("index.html");
+  win.loadFile(path.join(__dirname, "..", "renderer", "index.html"));
   win.setMenuBarVisibility(false);
   win.webContents.on("before-input-event", (event, input) => {
     if (
