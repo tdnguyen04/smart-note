@@ -90,4 +90,42 @@ async function getTree(rootPath) {
   return readDirNode(rootPath);
 }
 
-module.exports = { openVaultDialog, getTree };
+const TEXT_EXTENSIONS = new Set([
+  ".md",
+  ".markdown",
+  ".txt",
+  ".text",
+  ".json",
+  ".csv",
+  ".log",
+  ".yml",
+  ".yaml",
+]);
+
+function isTextLikePath(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  return TEXT_EXTENSIONS.has(ext);
+}
+
+async function readFile(filePath) {
+  if (!filePath || typeof filePath !== "string") {
+    return { ok: false, reason: "invalid-path" };
+  }
+
+  if (!isTextLikePath(filePath)) {
+    return { ok: false, reason: "binary" };
+  }
+
+  try {
+    const content = await fs.readFile(filePath, "utf8");
+    return { ok: true, content, path: filePath };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: "read-error",
+      message: error instanceof Error ? error.message : "Failed to read file",
+    };
+  }
+}
+
+module.exports = { openVaultDialog, getTree, readFile, isTextLikePath };

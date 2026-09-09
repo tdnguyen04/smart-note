@@ -2,6 +2,7 @@ import { mountEmptyState } from "./components/empty-state/EmptyState.js";
 import { mountSidebar } from "./components/sidebar/Sidebar.js";
 import { mountToolbar } from "./components/toolbar/Toolbar.js";
 import { mountTitlebar } from "./components/titlebar/Titlebar.js";
+import { mountEditor } from "./components/editor/Editor.js";
 
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
@@ -21,9 +22,12 @@ mountTitlebar(titlebarEl, {
   },
 });
 
+const editor = mountEditor(contentEl);
+
 const sidebar = mountSidebar(sidebarEl, {
   onSelect: ({ path }) => {
     selectedFilePath = path;
+    editor.openFile(path);
   },
 });
 
@@ -66,13 +70,13 @@ async function openVault(nextPath) {
   vaultPath = nextPath;
   selectedFilePath = null;
   sidebar.clearSelection();
+  editor.clear();
 
   const name = vaultNameFromPath(vaultPath);
 
   appEl.classList.add("has-vault");
   workspaceEl.hidden = false;
   emptyState.hide();
-  contentEl.replaceChildren();
 
   toolbar.setVaultName(name);
   toolbar.setSidebarVisible(sidebarVisible);
@@ -88,13 +92,13 @@ function renderEmpty() {
   sidebarVisible = true;
   sidebar.setTree([]);
   sidebar.clearSelection();
+  editor.clear();
   sidebarEl.classList.remove("is-hidden");
   toolbar.setVaultName("");
   toolbar.setSidebarVisible(true);
   appEl.classList.remove("has-vault");
   workspaceEl.hidden = true;
   emptyState.show();
-  contentEl.replaceChildren();
 }
 
 renderEmpty();
