@@ -128,4 +128,35 @@ async function readFile(filePath) {
   }
 }
 
-module.exports = { openVaultDialog, getTree, readFile, isTextLikePath };
+async function writeFile(filePath, content) {
+  if (!filePath || typeof filePath !== "string") {
+    return { ok: false, reason: "invalid-path" };
+  }
+
+  if (!isTextLikePath(filePath)) {
+    return { ok: false, reason: "binary" };
+  }
+
+  if (typeof content !== "string") {
+    return { ok: false, reason: "invalid-content" };
+  }
+
+  try {
+    await fs.writeFile(filePath, content, "utf8");
+    return { ok: true, path: filePath };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: "write-error",
+      message: error instanceof Error ? error.message : "Failed to write file",
+    };
+  }
+}
+
+module.exports = {
+  openVaultDialog,
+  getTree,
+  readFile,
+  writeFile,
+  isTextLikePath,
+};

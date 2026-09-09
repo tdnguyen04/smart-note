@@ -70,7 +70,7 @@ async function openVault(nextPath) {
   vaultPath = nextPath;
   selectedFilePath = null;
   sidebar.clearSelection();
-  editor.clear();
+  await editor.clear();
 
   const name = vaultNameFromPath(vaultPath);
 
@@ -86,13 +86,13 @@ async function openVault(nextPath) {
   sidebar.setTree(tree);
 }
 
-function renderEmpty() {
+async function renderEmpty() {
   vaultPath = null;
   selectedFilePath = null;
   sidebarVisible = true;
   sidebar.setTree([]);
   sidebar.clearSelection();
-  editor.clear();
+  await editor.clear();
   sidebarEl.classList.remove("is-hidden");
   toolbar.setVaultName("");
   toolbar.setSidebarVisible(true);

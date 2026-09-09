@@ -4,6 +4,8 @@ contextBridge.exposeInMainWorld("smartnote", {
   openVaultDialog: () => ipcRenderer.invoke("vault:open-dialog"),
   getTree: (rootPath) => ipcRenderer.invoke("vault:get-tree", rootPath),
   readFile: (filePath) => ipcRenderer.invoke("vault:read-file", filePath),
+  writeFile: (filePath, content) =>
+    ipcRenderer.invoke("vault:write-file", filePath, content),
   onVaultOpened: (callback) => {
     const listener = (_event, vaultPath) => callback(vaultPath);
     ipcRenderer.on("vault:opened", listener);
