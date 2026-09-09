@@ -30,6 +30,7 @@
   --space-6: 2rem;
 
   /* Layout */
+  --titlebar-height: 36px;
   --toolbar-height: 2.5rem;
   --sidebar-width: 16rem;
   --sidebar-min-width: 10rem;

@@ -1,8 +1,10 @@
 import { mountEmptyState } from "./components/empty-state/EmptyState.js";
 import { mountSidebar } from "./components/sidebar/Sidebar.js";
 import { mountToolbar } from "./components/toolbar/Toolbar.js";
+import { mountTitlebar } from "./components/titlebar/Titlebar.js";
 
 const appEl = document.getElementById("app");
+const titlebarEl = document.getElementById("titlebar");
 const emptyRoot = document.getElementById("empty-state");
 const toolbarEl = document.getElementById("toolbar");
 const workspaceEl = document.querySelector(".workspace");
@@ -12,6 +14,12 @@ const contentEl = document.getElementById("content");
 let vaultPath = null;
 let selectedFilePath = null;
 let sidebarVisible = true;
+
+mountTitlebar(titlebarEl, {
+  onFileMenu: (position) => {
+    window.smartnote.popupFileMenu(position);
+  },
+});
 
 const sidebar = mountSidebar(sidebarEl, {
   onSelect: ({ path }) => {
@@ -42,6 +50,10 @@ const emptyState = mountEmptyState(emptyRoot, {
     }
     await openVault(selectedPath);
   },
+});
+
+window.smartnote.onVaultOpened((selectedPath) => {
+  openVault(selectedPath);
 });
 
 function vaultNameFromPath(folderPath) {

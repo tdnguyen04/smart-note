@@ -1,8 +1,10 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 const { registerIpcHandlers } = require("./ipc");
+const { createAppMenu } = require("./menu");
 
 const projectRoot = path.join(__dirname, "..", "..");
+const TITLEBAR_HEIGHT = 36;
 
 // Only run in development
 require("electron-reload")(projectRoot, {
@@ -13,6 +15,12 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    titleBarStyle: "hidden",
+    titleBarOverlay: {
+      color: "#ffffff",
+      symbolColor: "#111111",
+      height: TITLEBAR_HEIGHT,
+    },
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -21,7 +29,9 @@ function createWindow() {
   });
 
   win.loadFile(path.join(__dirname, "..", "renderer", "index.html"));
+  // Keep accelerators from the app menu, but hide the clumsy second menu strip.
   win.setMenuBarVisibility(false);
+  win.setAutoHideMenuBar(true);
   win.webContents.on("before-input-event", (event, input) => {
     if (
       (input.control || input.meta) &&
@@ -37,6 +47,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   registerIpcHandlers();
+  createAppMenu();
   createWindow();
 });
 
