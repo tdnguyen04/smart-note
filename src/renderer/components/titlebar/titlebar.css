@@ -1,0 +1,78 @@
+.titlebar {
+  position: relative;
+  box-sizing: border-box;
+  flex: 0 0 env(titlebar-area-height, var(--titlebar-height));
+  width: 100%;
+  min-width: 0;
+  height: env(titlebar-area-height, var(--titlebar-height));
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding-left: var(--space-2);
+  /* Reserve space for native overlay controls (min / max / close) */
+  padding-right: 140px;
+  /* No border here: -webkit-app-region: drag clips borders on Windows */
+  background: var(--color-bg);
+  color: var(--color-fg);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+#titlebar-edge {
+  flex: 0 0 var(--border-width);
+  align-self: stretch;
+  width: 100%;
+  height: var(--border-width);
+  margin: 0;
+  padding: 0;
+  background: var(--color-border);
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  z-index: 1;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__logo {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 0 var(--space-1) 0 var(--space-2);
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
+.titlebar__menu-button {
+  padding: var(--space-1) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg);
+  font: inherit;
+  cursor: default;
+}
+
+.titlebar__menu-button:hover {
+  background: var(--color-bg-hover);
+}
+
+.titlebar__title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.titlebar__right {
+  margin-left: auto;
+  min-width: 0;
+}

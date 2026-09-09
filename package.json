@@ -1,34 +1,46 @@
 {
   "name": "smartnote",
   "version": "1.0.0",
-  "description": "",
+  "description": "A simple local vault notetaking app built with Electron.",
   "license": "ISC",
-  "author": "",
+  "author": "tdnguyen04",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dist": "electron-builder"
+    "dist": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir"
   },
   "build": {
-    "appId": "com.example.smartnote",
+    "appId": "com.tdnguyen.smartnote",
     "productName": "SmartNote",
+    "copyright": "Copyright © 2026",
     "files": [
-      "**/*"
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
     ],
     "directories": {
-      "buildResources": "assets"
+      "buildResources": "assets",
+      "output": "dist"
     },
     "linux": {
       "target": [
         "AppImage"
-      ]
+      ],
+      "category": "Office"
     },
     "win": {
       "target": [
         "nsis"
       ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   },
   "dependencies": {
