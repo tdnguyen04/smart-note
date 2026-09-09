@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
+const { registerIpcHandlers } = require("./ipc");
 
 const projectRoot = path.join(__dirname, "..", "..");
 
@@ -35,6 +36,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  registerIpcHandlers();
   createWindow();
 });
 

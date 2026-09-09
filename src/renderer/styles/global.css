@@ -69,3 +69,10 @@ body {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+/* While a native dialog is open: block clicks/hover, keep keyboard usable */
+body.is-dialog-open,
+body.is-dialog-open * {
+  pointer-events: none !important;
+  cursor: default !important;
+}
