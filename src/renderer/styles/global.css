@@ -18,10 +18,15 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 0;
 }
 
 #app:not(.has-vault) #toolbar {
   display: none;
+}
+
+#app:not(.has-vault) #empty-state {
+  flex: 1;
 }
 
 #toolbar {
@@ -38,6 +43,7 @@ body {
   display: flex;
   flex: 1;
   min-height: 0;
+  min-width: 0;
 }
 
 .workspace[hidden] {
@@ -64,13 +70,46 @@ body {
   flex: 1;
   min-width: 0;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   background: var(--color-bg);
+}
+
+::selection {
+  background: var(--color-bg-selected);
+  color: var(--color-fg);
 }
 
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+/* Monochrome scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fg-subtle);
+  background-clip: content-box;
+  border: 2px solid transparent;
 }
 
 /* While a native dialog is open: block clicks/hover, keep keyboard usable */

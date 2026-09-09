@@ -22,7 +22,7 @@
 }
 
 .empty-state__title {
-  font-size: var(--font-size-lg);
+  font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--color-fg);
@@ -31,16 +31,18 @@
 .empty-state__copy {
   color: var(--color-fg-muted);
   line-height: var(--line-height-body);
+  max-width: 18rem;
 }
 
 .empty-state__button {
-  margin-top: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-5);
   border: var(--border-width) solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   background: var(--color-fg);
   color: var(--color-bg);
   font-weight: 500;
+  transition: background 120ms ease, border-color 120ms ease;
 }
 
 .empty-state__button:hover {

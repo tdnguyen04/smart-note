@@ -5,16 +5,23 @@ const { createAppMenu } = require("./menu");
 
 const projectRoot = path.join(__dirname, "..", "..");
 const TITLEBAR_HEIGHT = 36;
+const isDev = !app.isPackaged;
 
-// Only run in development
-require("electron-reload")(projectRoot, {
-  electron: path.join(projectRoot, "node_modules", ".bin", "electron"),
-});
+if (isDev) {
+  require("electron-reload")(projectRoot, {
+    electron: path.join(projectRoot, "node_modules", ".bin", "electron"),
+  });
+}
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1100,
+    height: 720,
+    minWidth: 720,
+    minHeight: 480,
+    backgroundColor: "#ffffff",
+    show: false,
+    title: "SmartNote",
     titleBarStyle: "hidden",
     titleBarOverlay: {
       color: "#ffffff",
@@ -29,19 +36,27 @@ function createWindow() {
   });
 
   win.loadFile(path.join(__dirname, "..", "renderer", "index.html"));
-  // Keep accelerators from the app menu, but hide the clumsy second menu strip.
+  // Keep accelerators from the app menu, but hide the second menu strip.
   win.setMenuBarVisibility(false);
   win.setAutoHideMenuBar(true);
-  win.webContents.on("before-input-event", (event, input) => {
-    if (
-      (input.control || input.meta) &&
-      input.shift &&
-      input.key.toLowerCase() === "i"
-    ) {
-      win.webContents.toggleDevTools();
-      event.preventDefault();
-    }
+
+  win.once("ready-to-show", () => {
+    win.show();
   });
+
+  if (isDev) {
+    win.webContents.on("before-input-event", (event, input) => {
+      if (
+        (input.control || input.meta) &&
+        input.shift &&
+        input.key.toLowerCase() === "i"
+      ) {
+        win.webContents.toggleDevTools();
+        event.preventDefault();
+      }
+    });
+  }
+
   return win;
 }
 
@@ -52,14 +67,12 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  // on macOS
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
 app.on("activate", () => {
-  // on macOS
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
