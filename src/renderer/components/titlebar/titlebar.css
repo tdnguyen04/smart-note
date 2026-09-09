@@ -1,20 +1,32 @@
 .titlebar {
   position: relative;
-  flex: 0 0 var(--titlebar-height);
+  box-sizing: border-box;
+  flex: 0 0 env(titlebar-area-height, var(--titlebar-height));
+  width: 100%;
+  min-width: 0;
   height: env(titlebar-area-height, var(--titlebar-height));
   display: flex;
   align-items: center;
-  box-sizing: border-box;
-  padding-left: max(var(--space-2), env(titlebar-area-x, 0px));
-  /* Keep content out from under native min/max/close */
-  padding-right: calc(
-    100% - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100%)
-  );
-  border-bottom: var(--border-width) solid var(--color-border);
+  align-self: stretch;
+  padding-left: var(--space-2);
+  /* Reserve space for native overlay controls (min / max / close) */
+  padding-right: 140px;
+  /* No border here: -webkit-app-region: drag clips borders on Windows */
   background: var(--color-bg);
   color: var(--color-fg);
   -webkit-app-region: drag;
   user-select: none;
+}
+
+#titlebar-edge {
+  flex: 0 0 var(--border-width);
+  align-self: stretch;
+  width: 100%;
+  height: var(--border-width);
+  margin: 0;
+  padding: 0;
+  background: var(--color-border);
+  -webkit-app-region: no-drag;
 }
 
 .titlebar__left {
