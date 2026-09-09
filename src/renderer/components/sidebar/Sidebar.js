@@ -2,11 +2,6 @@ export function mountSidebar(root, { onSelect }) {
   root.classList.add("sidebar");
   root.replaceChildren();
 
-  const titleEl = document.createElement("div");
-  titleEl.className = "sidebar__title";
-  titleEl.hidden = true;
-  root.append(titleEl);
-
   const treeRoot = document.createElement("ul");
   treeRoot.className = "sidebar__tree";
   root.append(treeRoot);
@@ -100,16 +95,8 @@ export function mountSidebar(root, { onSelect }) {
   }
 
   return {
-    setTree(nextNodes, rootName = "") {
+    setTree(nextNodes) {
       nodes = Array.isArray(nextNodes) ? nextNodes : [];
-      if (rootName) {
-        titleEl.textContent = rootName;
-        titleEl.hidden = false;
-        titleEl.title = rootName;
-      } else {
-        titleEl.textContent = "";
-        titleEl.hidden = true;
-      }
       paint();
     },
     clearSelection() {

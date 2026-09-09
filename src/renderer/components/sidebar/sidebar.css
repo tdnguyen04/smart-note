@@ -3,20 +3,6 @@
   overflow: auto;
 }
 
-.sidebar__title {
-  padding: var(--space-3) var(--space-3) var(--space-2);
-  border-bottom: var(--border-width) solid var(--color-border);
-  font-weight: 600;
-  color: var(--color-fg);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sidebar__title[hidden] {
-  display: none;
-}
-
 .sidebar__tree {
   list-style: none;
   margin: 0;

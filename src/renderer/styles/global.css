@@ -24,7 +24,6 @@ body {
   display: none;
 }
 
-/* Reserved for Step 7 toolbar */
 #toolbar {
   flex: 0 0 var(--toolbar-height);
   display: flex;
@@ -33,10 +32,6 @@ body {
   padding: 0 var(--space-3);
   border-bottom: var(--border-width) solid var(--color-border);
   background: var(--color-bg);
-}
-
-#toolbar:empty {
-  display: none;
 }
 
 .workspace {
