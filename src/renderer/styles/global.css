@@ -24,11 +24,6 @@ body {
   display: none;
 }
 
-.vault-opened {
-  padding: var(--space-4);
-  color: var(--color-fg-muted);
-}
-
 /* Reserved for Step 7 toolbar */
 #toolbar {
   flex: 0 0 var(--toolbar-height);
