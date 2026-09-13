@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld("smartnote", {
   readFile: (filePath) => ipcRenderer.invoke("vault:read-file", filePath),
   writeFile: (filePath, content) =>
     ipcRenderer.invoke("vault:write-file", filePath, content),
+  getSettings: () => ipcRenderer.invoke("settings:get"),
+  setSettings: (partial) => ipcRenderer.invoke("settings:set", partial),
   onVaultOpened: (callback) => {
     const listener = (_event, vaultPath) => callback(vaultPath);
     ipcRenderer.on("vault:opened", listener);
