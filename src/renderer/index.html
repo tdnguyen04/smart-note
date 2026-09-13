@@ -18,10 +18,17 @@
         <header id="titlebar"></header>
         <div id="titlebar-edge" aria-hidden="true"></div>
         <div id="empty-state"></div>
-        <header id="toolbar"></header>
-        <div class="workspace" hidden>
-            <aside id="sidebar"></aside>
-            <main id="content"></main>
+        <!-- class "workspace" kept so current app.js can show/hide the shell -->
+        <div id="shell" class="shell workspace" hidden>
+            <aside id="ribbon" class="ribbon" aria-label="App ribbon"></aside>
+            <aside id="primary-sidebar" class="primary-sidebar">
+                <header id="toolbar"></header>
+                <div id="sidebar"></div>
+            </aside>
+            <div id="main" class="main">
+                <div id="home" class="home" hidden></div>
+                <main id="content"></main>
+            </div>
         </div>
     </div>
     <script type="module" src="app.js"></script>
