@@ -7,14 +7,38 @@ import { mountEditor } from "./components/editor/Editor.js";
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
 const emptyRoot = document.getElementById("empty-state");
+const shellEl = document.getElementById("shell");
+const ribbonEl = document.getElementById("ribbon");
+const primarySidebarEl = document.getElementById("primary-sidebar");
 const toolbarEl = document.getElementById("toolbar");
-const workspaceEl = document.querySelector(".workspace");
 const sidebarEl = document.getElementById("sidebar");
+const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
 
+/** @type {"onboarding" | "home" | "organize"} */
+let mode = "onboarding";
 let vaultPath = null;
 let selectedFilePath = null;
-let sidebarVisible = true;
+let sidebarOpen = true;
+
+const ribbonToggleBtn = document.createElement("button");
+ribbonToggleBtn.type = "button";
+ribbonToggleBtn.className = "ribbon__toggle";
+ribbonToggleBtn.title = "Toggle file sidebar";
+ribbonToggleBtn.setAttribute("aria-label", "Toggle file sidebar");
+ribbonToggleBtn.textContent = "☰";
+ribbonToggleBtn.addEventListener("click", () => {
+  if (mode === "onboarding") {
+    return;
+  }
+  if (mode === "home") {
+    showOrganize();
+    return;
+  }
+  sidebarOpen = !sidebarOpen;
+  applySidebarOpen();
+});
+ribbonEl.append(ribbonToggleBtn);
 
 mountTitlebar(titlebarEl, {
   onFileMenu: (position) => {
@@ -39,11 +63,6 @@ const toolbar = mountToolbar(toolbarEl, {
     }
     await openVault(selectedPath);
   },
-  onToggleSidebar: () => {
-    sidebarVisible = !sidebarVisible;
-    sidebarEl.classList.toggle("is-hidden", !sidebarVisible);
-    toolbar.setSidebarVisible(sidebarVisible);
-  },
 });
 
 const emptyState = mountEmptyState(emptyRoot, {
@@ -66,6 +85,48 @@ function vaultNameFromPath(folderPath) {
   return parts[parts.length - 1] || folderPath;
 }
 
+function applySidebarOpen() {
+  sidebarEl.classList.toggle("is-hidden", !sidebarOpen);
+  primarySidebarEl.classList.toggle("is-collapsed", !sidebarOpen);
+  ribbonToggleBtn.classList.toggle("is-active", sidebarOpen);
+  ribbonToggleBtn.title = sidebarOpen ? "Hide file sidebar" : "Show file sidebar";
+  ribbonToggleBtn.setAttribute(
+    "aria-label",
+    sidebarOpen ? "Hide file sidebar" : "Show file sidebar"
+  );
+}
+
+function showOnboarding() {
+  mode = "onboarding";
+  appEl.classList.remove("has-vault");
+  shellEl.hidden = true;
+  homeEl.hidden = true;
+  contentEl.hidden = false;
+  emptyState.show();
+}
+
+function showHome() {
+  mode = "home";
+  appEl.classList.add("has-vault");
+  emptyState.hide();
+  shellEl.hidden = false;
+  homeEl.hidden = false;
+  contentEl.hidden = true;
+  sidebarOpen = false;
+  applySidebarOpen();
+}
+
+function showOrganize() {
+  mode = "organize";
+  appEl.classList.add("has-vault");
+  emptyState.hide();
+  shellEl.hidden = false;
+  homeEl.hidden = true;
+  contentEl.hidden = false;
+  sidebarOpen = true;
+  applySidebarOpen();
+}
+
 async function openVault(nextPath) {
   vaultPath = nextPath;
   selectedFilePath = null;
@@ -73,32 +134,25 @@ async function openVault(nextPath) {
   await editor.clear();
 
   const name = vaultNameFromPath(vaultPath);
-
-  appEl.classList.add("has-vault");
-  workspaceEl.hidden = false;
-  emptyState.hide();
-
   toolbar.setVaultName(name);
-  toolbar.setSidebarVisible(sidebarVisible);
-  sidebarEl.classList.toggle("is-hidden", !sidebarVisible);
 
   const tree = await window.smartnote.getTree(vaultPath);
   sidebar.setTree(tree);
+
+  // Keep Phase 1 UX until Home/onboarding features land: land in Organize.
+  showOrganize();
 }
 
 async function renderEmpty() {
   vaultPath = null;
   selectedFilePath = null;
-  sidebarVisible = true;
+  sidebarOpen = true;
   sidebar.setTree([]);
   sidebar.clearSelection();
   await editor.clear();
-  sidebarEl.classList.remove("is-hidden");
   toolbar.setVaultName("");
-  toolbar.setSidebarVisible(true);
-  appEl.classList.remove("has-vault");
-  workspaceEl.hidden = true;
-  emptyState.show();
+  applySidebarOpen();
+  showOnboarding();
 }
 
 renderEmpty();

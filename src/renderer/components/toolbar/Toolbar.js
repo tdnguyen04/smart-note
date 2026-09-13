@@ -1,4 +1,4 @@
-export function mountToolbar(root, { onChangeVault, onToggleSidebar }) {
+export function mountToolbar(root, { onChangeVault }) {
   root.classList.add("toolbar");
   root.replaceChildren();
 
@@ -9,32 +9,67 @@ export function mountToolbar(root, { onChangeVault, onToggleSidebar }) {
   const actions = document.createElement("div");
   actions.className = "toolbar__actions";
 
-  const changeBtn = document.createElement("button");
-  changeBtn.type = "button";
-  changeBtn.className = "toolbar__button";
-  changeBtn.textContent = "Change vault";
-  changeBtn.addEventListener("click", () => {
+  const menuWrap = document.createElement("div");
+  menuWrap.className = "toolbar__menu";
+
+  const gearBtn = document.createElement("button");
+  gearBtn.type = "button";
+  gearBtn.className = "toolbar__icon-button";
+  gearBtn.title = "Settings";
+  gearBtn.setAttribute("aria-label", "Settings");
+  gearBtn.setAttribute("aria-haspopup", "menu");
+  gearBtn.setAttribute("aria-expanded", "false");
+  gearBtn.textContent = "⚙";
+
+  const menu = document.createElement("div");
+  menu.className = "toolbar__dropdown";
+  menu.hidden = true;
+  menu.setAttribute("role", "menu");
+
+  const changeItem = document.createElement("button");
+  changeItem.type = "button";
+  changeItem.className = "toolbar__dropdown-item";
+  changeItem.setAttribute("role", "menuitem");
+  changeItem.textContent = "Change vault";
+  changeItem.addEventListener("click", () => {
+    closeMenu();
     onChangeVault?.();
   });
 
-  const toggleBtn = document.createElement("button");
-  toggleBtn.type = "button";
-  toggleBtn.className = "toolbar__button";
-  toggleBtn.textContent = "Hide sidebar";
-  toggleBtn.addEventListener("click", () => {
-    onToggleSidebar?.();
+  menu.append(changeItem);
+  menuWrap.append(gearBtn, menu);
+  actions.append(menuWrap);
+  root.append(nameEl, actions);
+
+  function closeMenu() {
+    menu.hidden = true;
+    gearBtn.setAttribute("aria-expanded", "false");
+  }
+
+  function openMenu() {
+    menu.hidden = false;
+    gearBtn.setAttribute("aria-expanded", "true");
+  }
+
+  gearBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (menu.hidden) {
+      openMenu();
+    } else {
+      closeMenu();
+    }
   });
 
-  actions.append(changeBtn, toggleBtn);
-  root.append(nameEl, actions);
+  document.addEventListener("click", (event) => {
+    if (!menuWrap.contains(event.target)) {
+      closeMenu();
+    }
+  });
 
   return {
     setVaultName(name) {
       nameEl.textContent = name || "";
       nameEl.title = name || "";
-    },
-    setSidebarVisible(visible) {
-      toggleBtn.textContent = visible ? "Hide sidebar" : "Show sidebar";
     },
   };
 }
