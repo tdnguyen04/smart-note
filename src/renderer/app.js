@@ -3,6 +3,7 @@ import { mountSidebar } from "./components/sidebar/Sidebar.js";
 import { mountToolbar } from "./components/toolbar/Toolbar.js";
 import { mountTitlebar } from "./components/titlebar/Titlebar.js";
 import { mountEditor } from "./components/editor/Editor.js";
+import { mountRail } from "./components/rail/Rail.js";
 
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
@@ -21,28 +22,35 @@ let vaultPath = null;
 let selectedFilePath = null;
 let sidebarOpen = true;
 
-const ribbonToggleBtn = document.createElement("button");
-ribbonToggleBtn.type = "button";
-ribbonToggleBtn.className = "ribbon__toggle";
-ribbonToggleBtn.title = "Toggle file sidebar";
-ribbonToggleBtn.setAttribute("aria-label", "Toggle file sidebar");
-ribbonToggleBtn.textContent = "☰";
-ribbonToggleBtn.addEventListener("click", () => {
-  if (mode === "onboarding") {
-    return;
-  }
-  if (mode === "home") {
+const rail = mountRail(ribbonEl, {
+  onCompose: () => {
+    if (!vaultPath) {
+      return;
+    }
+    showHome();
+  },
+  onOrganize: () => {
+    if (!vaultPath) {
+      return;
+    }
     showOrganize();
-    return;
-  }
-  sidebarOpen = !sidebarOpen;
-  applySidebarOpen();
+  },
+  onProfile: () => {
+    // Settings / Change vault move here later.
+  },
 });
-ribbonEl.append(ribbonToggleBtn);
 
-mountTitlebar(titlebarEl, {
-  onFileMenu: (position) => {
-    window.smartnote.popupFileMenu(position);
+const titlebar = mountTitlebar(titlebarEl, {
+  onToggleSidebar: () => {
+    if (!vaultPath || mode === "onboarding") {
+      return;
+    }
+    if (mode === "home") {
+      showOrganize();
+      return;
+    }
+    sidebarOpen = !sidebarOpen;
+    applySidebarOpen();
   },
 });
 
@@ -88,12 +96,7 @@ function vaultNameFromPath(folderPath) {
 function applySidebarOpen() {
   sidebarEl.classList.toggle("is-hidden", !sidebarOpen);
   primarySidebarEl.classList.toggle("is-collapsed", !sidebarOpen);
-  ribbonToggleBtn.classList.toggle("is-active", sidebarOpen);
-  ribbonToggleBtn.title = sidebarOpen ? "Hide file sidebar" : "Show file sidebar";
-  ribbonToggleBtn.setAttribute(
-    "aria-label",
-    sidebarOpen ? "Hide file sidebar" : "Show file sidebar"
-  );
+  titlebar.setSidebarOpen(sidebarOpen);
 }
 
 function showOnboarding() {
@@ -102,6 +105,7 @@ function showOnboarding() {
   shellEl.hidden = true;
   homeEl.hidden = true;
   contentEl.hidden = false;
+  rail.setActive(null);
   emptyState.show();
 }
 
@@ -114,6 +118,7 @@ function showHome() {
   contentEl.hidden = true;
   sidebarOpen = false;
   applySidebarOpen();
+  rail.setActive("compose");
 }
 
 function showOrganize() {
@@ -125,6 +130,7 @@ function showOrganize() {
   contentEl.hidden = false;
   sidebarOpen = true;
   applySidebarOpen();
+  rail.setActive("organize");
 }
 
 async function openVault(nextPath) {

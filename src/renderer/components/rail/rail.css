@@ -31,8 +31,7 @@
   padding-top: var(--space-2);
 }
 
-.ribbon__btn,
-.ribbon__toggle {
+.ribbon__btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,21 +48,18 @@
   cursor: pointer;
 }
 
-.ribbon__btn:hover,
-.ribbon__toggle:hover {
+.ribbon__btn:hover {
   background: var(--color-bg-hover);
   color: var(--color-fg);
 }
 
-.ribbon__btn.is-active,
-.ribbon__toggle.is-active {
+.ribbon__btn.is-active {
   background: var(--color-bg-selected);
   border-color: var(--color-border);
   color: var(--color-fg);
 }
 
-.ribbon__btn:focus-visible,
-.ribbon__toggle:focus-visible {
+.ribbon__btn:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }

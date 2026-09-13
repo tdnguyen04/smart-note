@@ -1,4 +1,4 @@
-export function mountTitlebar(root, { onFileMenu }) {
+export function mountTitlebar(root, { onToggleSidebar }) {
   root.classList.add("titlebar");
   root.replaceChildren();
 
@@ -11,20 +11,18 @@ export function mountTitlebar(root, { onFileMenu }) {
   logo.alt = "";
   logo.draggable = false;
 
-  const fileBtn = document.createElement("button");
-  fileBtn.type = "button";
-  fileBtn.className = "titlebar__menu-button";
-  fileBtn.textContent = "File";
-  fileBtn.addEventListener("click", (event) => {
-    const rect = fileBtn.getBoundingClientRect();
-    onFileMenu?.({
-      x: Math.round(rect.left),
-      y: Math.round(rect.bottom),
-    });
-    event.currentTarget.blur();
+  const toggleBtn = document.createElement("button");
+  toggleBtn.type = "button";
+  toggleBtn.className = "titlebar__toggle";
+  toggleBtn.title = "Toggle file sidebar";
+  toggleBtn.setAttribute("aria-label", "Toggle file sidebar");
+  toggleBtn.textContent = "☰";
+  toggleBtn.addEventListener("click", () => {
+    onToggleSidebar?.();
+    toggleBtn.blur();
   });
 
-  left.append(logo, fileBtn);
+  left.append(logo, toggleBtn);
 
   const title = document.createElement("div");
   title.className = "titlebar__title";
@@ -37,5 +35,14 @@ export function mountTitlebar(root, { onFileMenu }) {
 
   return {
     el: root,
+    setSidebarOpen(open) {
+      const isOpen = Boolean(open);
+      toggleBtn.classList.toggle("is-active", isOpen);
+      toggleBtn.title = isOpen ? "Hide file sidebar" : "Show file sidebar";
+      toggleBtn.setAttribute(
+        "aria-label",
+        isOpen ? "Hide file sidebar" : "Show file sidebar"
+      );
+    },
   };
 }
