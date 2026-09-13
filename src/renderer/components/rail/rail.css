@@ -1,0 +1,69 @@
+/* Obsidian-style app ribbon — icons wired in Rail.js (Feature C2) */
+
+.ribbon {
+  flex: 0 0 var(--ribbon-width, 3rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  min-height: 0;
+  border-right: var(--border-width) solid var(--color-border);
+  background: var(--color-bg-muted);
+}
+
+.ribbon__top {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 0;
+}
+
+.ribbon__bottom {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.ribbon__btn,
+.ribbon__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg-muted);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ribbon__btn:hover,
+.ribbon__toggle:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-fg);
+}
+
+.ribbon__btn.is-active,
+.ribbon__toggle.is-active {
+  background: var(--color-bg-selected);
+  border-color: var(--color-border);
+  color: var(--color-fg);
+}
+
+.ribbon__btn:focus-visible,
+.ribbon__toggle:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
