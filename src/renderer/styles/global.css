@@ -93,15 +93,6 @@ body {
   background: var(--color-bg);
 }
 
-.home[hidden] {
-  display: none !important;
-}
-
-.home:not([hidden]) {
-  flex: 1;
-  min-height: 0;
-}
-
 #content {
   flex: 1;
   min-width: 0;

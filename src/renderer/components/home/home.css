@@ -1,0 +1,114 @@
+.home {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  padding: var(--space-6);
+  background: var(--color-bg);
+}
+
+.home[hidden] {
+  display: none !important;
+}
+
+.home__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 36rem;
+}
+
+.home__headline {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: var(--line-height-tight);
+  color: var(--color-fg);
+  text-align: center;
+}
+
+.home__vault {
+  margin: calc(var(--space-2) * -1) 0 0;
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-body);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home__vault[hidden] {
+  display: none;
+}
+
+.home__capture {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.home__input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 6.5rem;
+  max-height: 16rem;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 1.25rem;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-body);
+  resize: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  outline: none;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.home__input::placeholder {
+  color: var(--color-fg-subtle);
+}
+
+.home__input:hover {
+  border-color: var(--color-fg-subtle);
+}
+
+.home__input:focus {
+  border-color: var(--color-border-strong);
+  background: var(--color-bg);
+}
+
+.home__submit {
+  align-self: center;
+  padding: var(--space-2) var(--space-5);
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: 999px;
+  background: var(--color-fg);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.home__submit:hover {
+  background: var(--color-fg-muted);
+  border-color: var(--color-fg-muted);
+}
+
+.home__submit:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

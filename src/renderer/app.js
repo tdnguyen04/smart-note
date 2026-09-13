@@ -4,6 +4,7 @@ import { mountToolbar } from "./components/toolbar/Toolbar.js";
 import { mountTitlebar } from "./components/titlebar/Titlebar.js";
 import { mountEditor } from "./components/editor/Editor.js";
 import { mountRail } from "./components/rail/Rail.js";
+import { mountHome } from "./components/home/Home.js";
 
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
@@ -55,6 +56,7 @@ const titlebar = mountTitlebar(titlebarEl, {
 });
 
 const editor = mountEditor(contentEl);
+const home = mountHome(homeEl);
 
 const sidebar = mountSidebar(sidebarEl, {
   onSelect: ({ path }) => {
@@ -119,6 +121,7 @@ function showHome() {
   sidebarOpen = false;
   applySidebarOpen();
   rail.setActive("compose");
+  home.focus();
 }
 
 function showOrganize() {
@@ -141,12 +144,12 @@ async function openVault(nextPath) {
 
   const name = vaultNameFromPath(vaultPath);
   toolbar.setVaultName(name);
+  home.setVaultName(name);
 
   const tree = await window.smartnote.getTree(vaultPath);
   sidebar.setTree(tree);
 
-  // Keep Phase 1 UX until Home/onboarding features land: land in Organize.
-  showOrganize();
+  showHome();
 }
 
 async function renderEmpty() {
@@ -157,6 +160,7 @@ async function renderEmpty() {
   sidebar.clearSelection();
   await editor.clear();
   toolbar.setVaultName("");
+  home.setVaultName("");
   applySidebarOpen();
   showOnboarding();
 }
