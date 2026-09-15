@@ -14,6 +14,7 @@ const ribbonEl = document.getElementById("ribbon");
 const primarySidebarEl = document.getElementById("primary-sidebar");
 const toolbarEl = document.getElementById("toolbar");
 const sidebarEl = document.getElementById("sidebar");
+const sidebarEmptyEl = document.getElementById("sidebar-empty");
 const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
 
@@ -21,7 +22,13 @@ const contentEl = document.getElementById("content");
 let mode = "onboarding";
 let vaultPath = null;
 let selectedFilePath = null;
-let sidebarOpen = true;
+let sidebarOpen = false;
+
+/** Per-ribbon-tab sidebar preference (seeded with defaults). */
+const sidebarOpenByMode = {
+  home: false,
+  organize: true,
+};
 
 const rail = mountRail(ribbonEl, {
   onCompose: () => {
@@ -46,11 +53,10 @@ const titlebar = mountTitlebar(titlebarEl, {
     if (!vaultPath || mode === "onboarding") {
       return;
     }
-    if (mode === "home") {
-      showOrganize();
-      return;
-    }
     sidebarOpen = !sidebarOpen;
+    if (mode === "home" || mode === "organize") {
+      sidebarOpenByMode[mode] = sidebarOpen;
+    }
     applySidebarOpen();
   },
 });
@@ -96,9 +102,22 @@ function vaultNameFromPath(folderPath) {
 }
 
 function applySidebarOpen() {
-  sidebarEl.classList.toggle("is-hidden", !sidebarOpen);
   primarySidebarEl.classList.toggle("is-collapsed", !sidebarOpen);
   titlebar.setSidebarOpen(sidebarOpen);
+}
+
+function applySidebarPanel() {
+  const showFiles = mode === "organize";
+  sidebarEl.hidden = !showFiles;
+  sidebarEmptyEl.hidden = showFiles;
+}
+
+function applyModeSidebar() {
+  if (mode === "home" || mode === "organize") {
+    sidebarOpen = sidebarOpenByMode[mode];
+  }
+  applySidebarPanel();
+  applySidebarOpen();
 }
 
 function showOnboarding() {
@@ -118,8 +137,7 @@ function showHome() {
   shellEl.hidden = false;
   homeEl.hidden = false;
   contentEl.hidden = true;
-  sidebarOpen = false;
-  applySidebarOpen();
+  applyModeSidebar();
   rail.setActive("compose");
   home.focus();
 }
@@ -131,8 +149,7 @@ function showOrganize() {
   shellEl.hidden = false;
   homeEl.hidden = true;
   contentEl.hidden = false;
-  sidebarOpen = true;
-  applySidebarOpen();
+  applyModeSidebar();
   rail.setActive("organize");
 }
 
@@ -155,12 +172,15 @@ async function openVault(nextPath) {
 async function renderEmpty() {
   vaultPath = null;
   selectedFilePath = null;
-  sidebarOpen = true;
+  sidebarOpen = false;
+  sidebarOpenByMode.home = false;
+  sidebarOpenByMode.organize = true;
   sidebar.setTree([]);
   sidebar.clearSelection();
   await editor.clear();
   toolbar.setVaultName("");
   home.setVaultName("");
+  applySidebarPanel();
   applySidebarOpen();
   showOnboarding();
 }

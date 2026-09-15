@@ -38,4 +38,6 @@
   --sidebar-max-width: 28rem;
   --border-width: 1px;
   --radius-sm: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 8px;
 }

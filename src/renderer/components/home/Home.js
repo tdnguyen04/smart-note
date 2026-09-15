@@ -8,6 +8,9 @@ export function mountHome(root) {
   const panel = document.createElement("div");
   panel.className = "home__panel";
 
+  const header = document.createElement("div");
+  header.className = "home__header";
+
   const headline = document.createElement("h1");
   headline.className = "home__headline";
   headline.textContent = "What's on your mind?";
@@ -16,6 +19,25 @@ export function mountHome(root) {
   vaultLine.className = "home__vault";
   vaultLine.hidden = true;
 
+  const vaultIcon = document.createElement("span");
+  vaultIcon.className = "home__vault-icon";
+  vaultIcon.setAttribute("aria-hidden", "true");
+  vaultIcon.innerHTML = `
+    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M1.5 4.5h4l1.5 1.5H14.5v7.5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1z" />
+    </svg>
+  `.trim();
+
+  const vaultLabel = document.createElement("span");
+  vaultLabel.className = "home__vault-label";
+
+  const vaultName = document.createElement("span");
+  vaultName.className = "home__vault-name";
+
+  vaultLabel.append(document.createTextNode("Saving to "), vaultName);
+  vaultLine.append(vaultIcon, vaultLabel);
+  header.append(headline, vaultLine);
+
   const capture = document.createElement("div");
   capture.className = "home__capture";
 
@@ -23,9 +45,12 @@ export function mountHome(root) {
   input.className = "home__input";
   input.placeholder = "Capture a note…";
   input.setAttribute("aria-label", "Capture a note");
-  input.rows = 3;
+  input.rows = 4;
   input.wrap = "soft";
   input.spellcheck = true;
+
+  const actions = document.createElement("div");
+  actions.className = "home__actions";
 
   const submit = document.createElement("button");
   submit.type = "button";
@@ -43,13 +68,17 @@ export function mountHome(root) {
     }
   });
 
-  capture.append(input, submit);
-  panel.append(headline, vaultLine, capture);
+  actions.append(submit);
+  capture.append(input, actions);
+  panel.append(header, capture);
   root.append(panel);
 
   return {
     focus() {
-      input.focus();
+      // Defer so focus wins after ribbon/titlebar button clicks and unhide.
+      requestAnimationFrame(() => {
+        input.focus({ preventScroll: true });
+      });
     },
     clear() {
       input.value = "";
@@ -57,12 +86,12 @@ export function mountHome(root) {
     setVaultName(name) {
       const label = (name || "").trim();
       if (!label) {
-        vaultLine.textContent = "";
+        vaultName.textContent = "";
         vaultLine.removeAttribute("title");
         vaultLine.hidden = true;
         return;
       }
-      vaultLine.textContent = `Saving to ${label}`;
+      vaultName.textContent = label;
       vaultLine.title = label;
       vaultLine.hidden = false;
     },
