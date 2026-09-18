@@ -38,7 +38,6 @@ const titlebar = mountTitlebar(titlebarEl, {
       return;
     }
     updateState({ sidebarOpen: !state.sidebarOpen });
-    applySidebarOpen();
   },
 });
 
@@ -86,55 +85,6 @@ function vaultNameFromPath(folderPath) {
   return parts[parts.length - 1] || folderPath;
 }
 
-function applySidebarOpen() {
-  primarySidebarEl.classList.toggle("is-collapsed", !state.sidebarOpen);
-  titlebar.setSidebarOpen(state.sidebarOpen);
-}
-
-function applySidebarPanel() {
-  const showFiles = state.mode === "organize";
-  sidebarEl.hidden = !showFiles;
-  sidebarEmptyEl.hidden = showFiles;
-}
-
-function applyModeSidebar() {
-  if (state.mode === "home" || state.mode === "organize") {
-    updateState({ sidebarOpen: constants.sidebarOpenByMode[state.mode] });
-  }
-  applySidebarPanel();
-  applySidebarOpen();
-}
-
-function showOnboarding() {
-  updateState({ mode: "onboarding" });
-  appEl.classList.remove("has-vault");
-  shellEl.hidden = true;
-  homeEl.hidden = true;
-  contentEl.hidden = false;
-  emptyState.show();
-}
-
-function showHome() {
-  updateState({ mode: "home" });
-  appEl.classList.add("has-vault");
-  emptyState.hide();
-  shellEl.hidden = false;
-  homeEl.hidden = false;
-  contentEl.hidden = true;
-  applyModeSidebar();
-  home.focus();
-}
-
-function showOrganize() {
-  updateState({ mode: "organize" });
-  appEl.classList.add("has-vault");
-  emptyState.hide();
-  shellEl.hidden = false;
-  homeEl.hidden = true;
-  contentEl.hidden = false;
-  applyModeSidebar();
-}
-
 async function openVault(nextPath) {
   updateState({ vaultPath: nextPath });
   updateState({selectedFilePath: null});
@@ -148,7 +98,7 @@ async function openVault(nextPath) {
   const tree = await window.smartnote.getTree(state.vaultPath);
   sidebar.setTree(tree);
 
-  showHome();
+  updateState({ mode: "home", sidebarOpen: constants.sidebarOpenByMode.home });
 }
 
 async function renderEmpty() {
@@ -159,9 +109,7 @@ async function renderEmpty() {
   await editor.clear();
   toolbar.setVaultName("");
   home.setVaultName("");
-  applySidebarPanel();
-  applySidebarOpen();
-  showOnboarding();
+  updateState({ mode: "onboarding" });
 }
 
 renderEmpty();
