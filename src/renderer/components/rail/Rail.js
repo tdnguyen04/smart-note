@@ -1,3 +1,5 @@
+import { subscribe } from "../../store.js";
+
 /**
  * App rail: Compose / Organize on top, Profile at bottom.
  */
@@ -33,20 +35,10 @@ export function mountRail(root, { onCompose, onOrganize, onProfile }) {
   bottom.append(profileBtn);
   root.append(top, bottom);
 
-  /** @type {"compose" | "organize" | null} */
-  let active = null;
-
-  function applyActive() {
-    composeBtn.classList.toggle("is-active", active === "compose");
-    organizeBtn.classList.toggle("is-active", active === "organize");
-  }
-
-  return {
-    setActive(next) {
-      active = next === "compose" || next === "organize" ? next : null;
-      applyActive();
-    },
-  };
+  subscribe((state) => {
+    composeBtn.classList.toggle("is-active", state.mode === "home");
+    organizeBtn.classList.toggle("is-active", state.mode === "organize");
+  });
 }
 
 function createRailButton({ label, glyph, onClick, className = "rail__btn" }) {

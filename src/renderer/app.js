@@ -6,6 +6,7 @@ import { mountEditor } from "./components/editor/Editor.js";
 import { mountRail } from "./components/rail/Rail.js";
 import { mountHome } from "./components/home/Home.js";
 import { state, subscribe, updateState, constants } from "./store.js";
+import { initRouter } from "./router.js";
 
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
@@ -25,16 +26,10 @@ let selectedFilePath = null;
 
 const rail = mountRail(railEl, {
   onCompose: () => {
-    if (!vaultPath) {
-      return;
-    }
-    showHome();
+    if (vaultPath) updateState({ mode: "home", sidebarOpen: constants.sidebarOpenByMode.home });
   },
   onOrganize: () => {
-    if (!vaultPath) {
-      return;
-    }
-    showOrganize();
+    if (vaultPath) updateState({ mode: "organize", sidebarOpen: constants.sidebarOpenByMode.organize });
   },
   onProfile: () => {
     // Settings / Change vault move here later.
@@ -81,6 +76,10 @@ const emptyState = mountEmptyState(emptyRoot, {
   },
 });
 
+// --- Initialize Router ---
+// Pass the mounted components so the router can trigger their UI methods (like .focus() or .setActive())
+initRouter({ titlebar, rail, emptyState, home });
+
 window.smartnote.onVaultOpened((selectedPath) => {
   openVault(selectedPath);
 });
@@ -116,7 +115,6 @@ function showOnboarding() {
   shellEl.hidden = true;
   homeEl.hidden = true;
   contentEl.hidden = false;
-  rail.setActive(null);
   emptyState.show();
 }
 
@@ -128,7 +126,6 @@ function showHome() {
   homeEl.hidden = false;
   contentEl.hidden = true;
   applyModeSidebar();
-  rail.setActive("compose");
   home.focus();
 }
 
@@ -140,7 +137,6 @@ function showOrganize() {
   homeEl.hidden = true;
   contentEl.hidden = false;
   applyModeSidebar();
-  rail.setActive("organize");
 }
 
 async function openVault(nextPath) {
