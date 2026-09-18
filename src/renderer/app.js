@@ -19,17 +19,10 @@ const sidebarEmptyEl = document.getElementById("sidebar-empty");
 const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
 
-/** @type {"onboarding" | "home" | "organize"} */
+
 let mode = "onboarding";
 let vaultPath = null;
 let selectedFilePath = null;
-let sidebarOpen = false;
-
-/** Per-rail-tab sidebar preference (seeded with defaults). */
-const sidebarOpenByMode = {
-  home: false,
-  organize: true,
-};
 
 const rail = mountRail(railEl, {
   onCompose: () => {
@@ -54,10 +47,7 @@ const titlebar = mountTitlebar(titlebarEl, {
     if (!vaultPath || mode === "onboarding") {
       return;
     }
-    sidebarOpen = !sidebarOpen;
-    if (mode === "home" || mode === "organize") {
-      sidebarOpenByMode[mode] = sidebarOpen;
-    }
+    updateState({ sidebarOpen: !state.sidebarOpen });
     applySidebarOpen();
   },
 });
@@ -103,8 +93,8 @@ function vaultNameFromPath(folderPath) {
 }
 
 function applySidebarOpen() {
-  primarySidebarEl.classList.toggle("is-collapsed", !sidebarOpen);
-  titlebar.setSidebarOpen(sidebarOpen);
+  primarySidebarEl.classList.toggle("is-collapsed", !state.sidebarOpen);
+  titlebar.setSidebarOpen(state.sidebarOpen);
 }
 
 function applySidebarPanel() {
@@ -115,7 +105,7 @@ function applySidebarPanel() {
 
 function applyModeSidebar() {
   if (mode === "home" || mode === "organize") {
-    sidebarOpen = sidebarOpenByMode[mode];
+    updateState({ sidebarOpen: state.sidebarOpenByMode[mode] });
   }
   applySidebarPanel();
   applySidebarOpen();
@@ -173,9 +163,6 @@ async function openVault(nextPath) {
 async function renderEmpty() {
   vaultPath = null;
   selectedFilePath = null;
-  sidebarOpen = false;
-  sidebarOpenByMode.home = false;
-  sidebarOpenByMode.organize = true;
   sidebar.setTree([]);
   sidebar.clearSelection();
   await editor.clear();
