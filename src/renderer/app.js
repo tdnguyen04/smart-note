@@ -20,16 +20,12 @@ const sidebarEmptyEl = document.getElementById("sidebar-empty");
 const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
 
-
-let vaultPath = null;
-let selectedFilePath = null;
-
 const rail = mountRail(railEl, {
   onCompose: () => {
-    if (vaultPath) updateState({ mode: "home", sidebarOpen: constants.sidebarOpenByMode.home });
+    if (state.vaultPath) updateState({ mode: "home", sidebarOpen: constants.sidebarOpenByMode.home });
   },
   onOrganize: () => {
-    if (vaultPath) updateState({ mode: "organize", sidebarOpen: constants.sidebarOpenByMode.organize });
+    if (state.vaultPath) updateState({ mode: "organize", sidebarOpen: constants.sidebarOpenByMode.organize });
   },
   onProfile: () => {
     // Settings / Change vault move here later.
@@ -38,7 +34,7 @@ const rail = mountRail(railEl, {
 
 const titlebar = mountTitlebar(titlebarEl, {
   onToggleSidebar: () => {
-    if (!vaultPath || state.mode === "onboarding") {
+    if (!state.vaultPath || state.mode === "onboarding") {
       return;
     }
     updateState({ sidebarOpen: !state.sidebarOpen });
@@ -51,7 +47,7 @@ const home = mountHome(homeEl);
 
 const sidebar = mountSidebar(sidebarEl, {
   onSelect: ({ path }) => {
-    selectedFilePath = path;
+    updateState({selectedFilePath: path})
     editor.openFile(path);
   },
 });
@@ -140,24 +136,24 @@ function showOrganize() {
 }
 
 async function openVault(nextPath) {
-  vaultPath = nextPath;
-  selectedFilePath = null;
+  updateState({ vaultPath: nextPath });
+  updateState({selectedFilePath: null});
   sidebar.clearSelection();
   await editor.clear();
 
-  const name = vaultNameFromPath(vaultPath);
+  const name = vaultNameFromPath(state.vaultPath);
   toolbar.setVaultName(name);
   home.setVaultName(name);
 
-  const tree = await window.smartnote.getTree(vaultPath);
+  const tree = await window.smartnote.getTree(state.vaultPath);
   sidebar.setTree(tree);
 
   showHome();
 }
 
 async function renderEmpty() {
-  vaultPath = null;
-  selectedFilePath = null;
+  updateState({vaultPath: null});
+  updateState({selectedFilePath: null});
   sidebar.setTree([]);
   sidebar.clearSelection();
   await editor.clear();
