@@ -5,7 +5,7 @@ import { mountTitlebar } from "./components/titlebar/Titlebar.js";
 import { mountEditor } from "./components/editor/Editor.js";
 import { mountRail } from "./components/rail/Rail.js";
 import { mountHome } from "./components/home/Home.js";
-import { state, subscribe, updateState } from "./store.js";
+import { state, subscribe, updateState, constants } from "./store.js";
 
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
@@ -20,7 +20,6 @@ const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
 
 
-let mode = "onboarding";
 let vaultPath = null;
 let selectedFilePath = null;
 
@@ -44,7 +43,7 @@ const rail = mountRail(railEl, {
 
 const titlebar = mountTitlebar(titlebarEl, {
   onToggleSidebar: () => {
-    if (!vaultPath || mode === "onboarding") {
+    if (!vaultPath || state.mode === "onboarding") {
       return;
     }
     updateState({ sidebarOpen: !state.sidebarOpen });
@@ -98,21 +97,21 @@ function applySidebarOpen() {
 }
 
 function applySidebarPanel() {
-  const showFiles = mode === "organize";
+  const showFiles = state.mode === "organize";
   sidebarEl.hidden = !showFiles;
   sidebarEmptyEl.hidden = showFiles;
 }
 
 function applyModeSidebar() {
-  if (mode === "home" || mode === "organize") {
-    updateState({ sidebarOpen: state.sidebarOpenByMode[mode] });
+  if (state.mode === "home" || state.mode === "organize") {
+    updateState({ sidebarOpen: constants.sidebarOpenByMode[state.mode] });
   }
   applySidebarPanel();
   applySidebarOpen();
 }
 
 function showOnboarding() {
-  mode = "onboarding";
+  updateState({ mode: "onboarding" });
   appEl.classList.remove("has-vault");
   shellEl.hidden = true;
   homeEl.hidden = true;
@@ -122,7 +121,7 @@ function showOnboarding() {
 }
 
 function showHome() {
-  mode = "home";
+  updateState({ mode: "home" });
   appEl.classList.add("has-vault");
   emptyState.hide();
   shellEl.hidden = false;
@@ -134,7 +133,7 @@ function showHome() {
 }
 
 function showOrganize() {
-  mode = "organize";
+  updateState({ mode: "organize" });
   appEl.classList.add("has-vault");
   emptyState.hide();
   shellEl.hidden = false;

@@ -5,15 +5,17 @@ export const state = {
     vaultPath: null,
     /** @type {boolean} */
     sidebarOpen: false,
+    /** @type {string | null} */
+    selectedFilePath: null
+};
 
+export const constants = {
     /** @type {{ home: boolean, organize: boolean }} */
     /** Read-only preference for sidebar open state by mode. */
     sidebarOpenByMode: {
         home: false,
         organize: true
     },
-    /** @type {string | null} */
-    selectedFilePath: null
 };
 
 const listeners = [];
