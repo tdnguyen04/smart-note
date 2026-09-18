@@ -5,6 +5,7 @@ import { mountTitlebar } from "./components/titlebar/Titlebar.js";
 import { mountEditor } from "./components/editor/Editor.js";
 import { mountRail } from "./components/rail/Rail.js";
 import { mountHome } from "./components/home/Home.js";
+import { state, subscribe, updateState } from "./store.js";
 
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
