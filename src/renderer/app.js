@@ -22,10 +22,20 @@ const contentEl = document.getElementById("content");
 
 const rail = mountRail(railEl, {
   onCompose: () => {
-    if (state.vaultPath) updateState({ mode: "home", sidebarOpen: constants.sidebarOpenByMode.home });
+    if (state.vaultPath)
+      updateState({
+        mode: "home",
+        sidebarOpen: constants.sidebarOpenByMode.home,
+        selectedFilePath: null
+      });
   },
   onOrganize: () => {
-    if (state.vaultPath) updateState({ mode: "organize", sidebarOpen: constants.sidebarOpenByMode.organize });
+    if (state.vaultPath)
+      updateState({
+        mode: "organize",
+        sidebarOpen: constants.sidebarOpenByMode.organize,
+        selectedFilePath: null
+      });
   },
   onProfile: () => {
     // Settings / Change vault move here later.
@@ -41,13 +51,12 @@ const titlebar = mountTitlebar(titlebarEl, {
   },
 });
 
-const editor = mountEditor(contentEl);
+mountEditor(contentEl);
 const home = mountHome(homeEl);
 
 const sidebar = mountSidebar(sidebarEl, {
   onSelect: ({ path }) => {
-    updateState({selectedFilePath: path})
-    editor.openFile(path);
+    updateState({ selectedFilePath: path })
   },
 });
 
@@ -86,10 +95,8 @@ function vaultNameFromPath(folderPath) {
 }
 
 async function openVault(nextPath) {
-  updateState({ vaultPath: nextPath });
-  updateState({selectedFilePath: null});
+  updateState({ vaultPath: nextPath, selectedFilePath: null });
   sidebar.clearSelection();
-  await editor.clear();
 
   const name = vaultNameFromPath(state.vaultPath);
   toolbar.setVaultName(name);
@@ -102,11 +109,9 @@ async function openVault(nextPath) {
 }
 
 async function renderEmpty() {
-  updateState({vaultPath: null});
-  updateState({selectedFilePath: null});
+  updateState({ vaultPath: null, selectedFilePath: null });
   sidebar.setTree([]);
   sidebar.clearSelection();
-  await editor.clear();
   toolbar.setVaultName("");
   home.setVaultName("");
   updateState({ mode: "onboarding" });

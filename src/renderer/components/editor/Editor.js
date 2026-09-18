@@ -1,3 +1,5 @@
+import { subscribe } from "../../store.js";
+
 /**
  * Editor owns #content. mode: 'raw' now; later 'preview' can share this mount API.
  */
@@ -155,41 +157,52 @@ export function mountEditor(root) {
 
   showEmpty();
 
-  return {
-    async openFile(filePath) {
-      await flushSave();
+  async function openFile(filePath) {
+    await flushSave();
 
-      if (!filePath) {
-        showEmpty();
-        return;
-      }
-
-      setTitle(filePath);
-
-      const result = await window.smartnote.readFile(filePath);
-      if (!result || !result.ok) {
-        if (result?.reason === "binary") {
-          showUnsupported(filePath);
-          return;
-        }
-        currentPath = filePath;
-        showError(result?.message || "Could not open this file.");
-        return;
-      }
-
-      if (mode === "raw") {
-        showRaw(filePath, result.content);
-      }
-    },
-    async clear() {
-      await flushSave();
+    if (!filePath) {
       showEmpty();
-    },
-    getCurrentPath() {
-      return currentPath;
-    },
-    setMode(nextMode) {
-      mode = nextMode === "preview" ? "preview" : "raw";
-    },
-  };
+      return;
+    }
+
+    setTitle(filePath);
+
+    const result = await window.smartnote.readFile(filePath);
+    if (!result || !result.ok) {
+      if (result?.reason === "binary") {
+        showUnsupported(filePath);
+        return;
+      }
+      currentPath = filePath;
+      showError(result?.message || "Could not open this file.");
+      return;
+    }
+
+    if (mode === "raw") {
+      showRaw(filePath, result.content);
+    }
+  }
+  async function clear() {
+    await flushSave();
+    showEmpty();
+  }
+  function getCurrentPath() {
+    return currentPath;
+  }
+  function setMode(nextMode) {
+    mode = nextMode === "preview" ? "preview" : "raw";
+  }
+
+  subscribe(async (state) => {
+    try {
+      if (state.selectedFilePath) {
+        await openFile(state.selectedFilePath);
+      } else {
+        await clear();
+      }
+    } catch (error) {
+      console.error(error);
+      showError("An error occurred while opening the file.");
+    }
+  });
 }
