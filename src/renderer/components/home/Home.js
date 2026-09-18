@@ -75,7 +75,7 @@ export function mountHome(root) {
 
   return {
     focus() {
-      // Defer so focus wins after ribbon/titlebar button clicks and unhide.
+      // Defer so focus wins after rail/titlebar button clicks and unhide.
       requestAnimationFrame(() => {
         input.focus({ preventScroll: true });
       });

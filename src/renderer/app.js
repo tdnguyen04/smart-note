@@ -10,7 +10,7 @@ const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
 const emptyRoot = document.getElementById("empty-state");
 const shellEl = document.getElementById("shell");
-const ribbonEl = document.getElementById("ribbon");
+const railEl = document.getElementById("rail");
 const primarySidebarEl = document.getElementById("primary-sidebar");
 const toolbarEl = document.getElementById("toolbar");
 const sidebarEl = document.getElementById("sidebar");
@@ -24,13 +24,13 @@ let vaultPath = null;
 let selectedFilePath = null;
 let sidebarOpen = false;
 
-/** Per-ribbon-tab sidebar preference (seeded with defaults). */
+/** Per-rail-tab sidebar preference (seeded with defaults). */
 const sidebarOpenByMode = {
   home: false,
   organize: true,
 };
 
-const rail = mountRail(ribbonEl, {
+const rail = mountRail(railEl, {
   onCompose: () => {
     if (!vaultPath) {
       return;

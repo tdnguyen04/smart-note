@@ -29,7 +29,7 @@ body {
   flex: 1;
 }
 
-/* Obsidian-style shell: ribbon | primary sidebar | main */
+/* Obsidian-style shell: rail | primary sidebar | main */
 .shell,
 .workspace {
   display: flex;

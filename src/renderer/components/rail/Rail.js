@@ -1,29 +1,29 @@
 /**
- * App ribbon: Compose / Organize on top, Profile at bottom.
+ * App rail: Compose / Organize on top, Profile at bottom.
  */
 export function mountRail(root, { onCompose, onOrganize, onProfile }) {
-  root.classList.add("ribbon");
+  root.classList.add("rail");
   root.replaceChildren();
 
   const top = document.createElement("div");
-  top.className = "ribbon__top";
+  top.className = "rail__top";
 
   const bottom = document.createElement("div");
-  bottom.className = "ribbon__bottom";
+  bottom.className = "rail__bottom";
 
-  const composeBtn = createRibbonButton({
+  const composeBtn = createRailButton({
     label: "Compose",
     glyph: "✎",
     onClick: () => onCompose?.(),
   });
 
-  const organizeBtn = createRibbonButton({
+  const organizeBtn = createRailButton({
     label: "Organize",
     glyph: "▤",
     onClick: () => onOrganize?.(),
   });
 
-  const profileBtn = createRibbonButton({
+  const profileBtn = createRailButton({
     label: "Profile",
     glyph: "○",
     onClick: () => onProfile?.(),
@@ -49,7 +49,7 @@ export function mountRail(root, { onCompose, onOrganize, onProfile }) {
   };
 }
 
-function createRibbonButton({ label, glyph, onClick, className = "ribbon__btn" }) {
+function createRailButton({ label, glyph, onClick, className = "rail__btn" }) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = className;

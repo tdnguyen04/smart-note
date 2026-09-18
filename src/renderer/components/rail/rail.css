@@ -1,7 +1,7 @@
-/* Obsidian-style app ribbon — icons wired in Rail.js (Feature C2) */
+/* Obsidian-style app rail — icons wired in Rail.js (Feature C2) */
 
-.ribbon {
-  flex: 0 0 var(--ribbon-width, 3rem);
+.rail {
+  flex: 0 0 var(--rail-width, 3rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12,7 +12,7 @@
   background: var(--color-bg-muted);
 }
 
-.ribbon__top {
+.rail__top {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -21,7 +21,7 @@
   min-height: 0;
 }
 
-.ribbon__bottom {
+.rail__bottom {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
@@ -31,7 +31,7 @@
   padding-top: var(--space-2);
 }
 
-.ribbon__btn {
+.rail__btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,18 +48,18 @@
   cursor: pointer;
 }
 
-.ribbon__btn:hover {
+.rail__btn:hover {
   background: var(--color-bg-hover);
   color: var(--color-fg);
 }
 
-.ribbon__btn.is-active {
+.rail__btn.is-active {
   background: var(--color-bg-selected);
   border-color: var(--color-border);
   color: var(--color-fg);
 }
 
-.ribbon__btn:focus-visible {
+.rail__btn:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
