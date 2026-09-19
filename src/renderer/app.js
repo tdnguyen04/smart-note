@@ -20,7 +20,7 @@ const sidebarEmptyEl = document.getElementById("sidebar-empty");
 const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
 
-const rail = mountRail(railEl, {
+mountRail(railEl, {
   onCompose: () => {
     if (state.vaultPath)
       updateState({
@@ -82,7 +82,7 @@ const emptyState = mountEmptyState(emptyRoot, {
 
 // --- Initialize Router ---
 // Pass the mounted components so the router can trigger their UI methods (like .focus() or .setActive())
-initRouter({ titlebar, rail, emptyState, home });
+initRouter({ titlebar, emptyState, home });
 
 window.smartnote.onVaultOpened((selectedPath) => {
   openVault(selectedPath);

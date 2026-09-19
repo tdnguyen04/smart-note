@@ -11,7 +11,7 @@ const sidebarEl = document.getElementById("sidebar");
 const sidebarEmptyEl = document.getElementById("sidebar-empty");
 
 
-export function initRouter({ titlebar, rail, onboardingState, home }) {
+export function initRouter({ titlebar, onboardingState, home }) {
   // We pass in references to the mounted components so the router can trigger their UI methods
 
   subscribe((state) => {
