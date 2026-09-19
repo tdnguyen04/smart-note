@@ -42,7 +42,7 @@ mountRail(railEl, {
   },
 });
 
-const titlebar = mountTitlebar(titlebarEl, {
+mountTitlebar(titlebarEl, {
   onToggleSidebar: () => {
     if (!state.vaultPath || state.mode === "onboarding") {
       return;
@@ -70,7 +70,7 @@ const toolbar = mountToolbar(toolbarEl, {
   },
 });
 
-const emptyState = mountEmptyState(emptyRoot, {
+mountEmptyState(emptyRoot, {
   onOpenVault: async () => {
     const selectedPath = await window.smartnote.openVaultDialog();
     if (!selectedPath) {
@@ -82,7 +82,7 @@ const emptyState = mountEmptyState(emptyRoot, {
 
 // --- Initialize Router ---
 // Pass the mounted components so the router can trigger their UI methods (like .focus() or .setActive())
-initRouter({ titlebar, emptyState, home });
+initRouter({ home });
 
 window.smartnote.onVaultOpened((selectedPath) => {
   openVault(selectedPath);

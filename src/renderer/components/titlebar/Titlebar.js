@@ -1,3 +1,5 @@
+import { subscribe } from "../../store.js";
+
 export function mountTitlebar(root, { onToggleSidebar }) {
   root.classList.add("titlebar");
   root.replaceChildren();
@@ -33,16 +35,18 @@ export function mountTitlebar(root, { onToggleSidebar }) {
 
   root.append(left, title, right);
 
-  return {
-    el: root,
-    setSidebarOpen(open) {
-      const isOpen = Boolean(open);
-      toggleBtn.classList.toggle("is-active", isOpen);
-      toggleBtn.title = isOpen ? "Hide file sidebar" : "Show file sidebar";
-      toggleBtn.setAttribute(
-        "aria-label",
-        isOpen ? "Hide file sidebar" : "Show file sidebar"
-      );
-    },
-  };
+  function setSidebarOpen(open) {
+    const isOpen = Boolean(open);
+    toggleBtn.classList.toggle("is-active", isOpen);
+    toggleBtn.title = isOpen ? "Hide file sidebar" : "Show file sidebar";
+    toggleBtn.setAttribute(
+      "aria-label",
+      isOpen ? "Hide file sidebar" : "Show file sidebar"
+    );
+  }
+
+  subscribe((state) => {
+    // title.textContent = state.vaultPath ? vaultNameFromPath(state.vaultPath) : "SmartNote";
+    setSidebarOpen(state.sidebarOpen);
+  });
 }
