@@ -11,7 +11,7 @@ const sidebarEl = document.getElementById("sidebar");
 const sidebarEmptyEl = document.getElementById("sidebar-empty");
 
 
-export function initRouter({ home }) {
+export function initRouter() {
   // We pass in references to the mounted components so the router can trigger their UI methods
 
   subscribe((state) => {
@@ -25,15 +25,12 @@ export function initRouter({ home }) {
     homeEl.hidden = state.mode !== "home";
     contentEl.hidden = (state.mode !== "organize" && state.mode !== "onboarding");
 
-    // 3. Handle Component Visibility/States based on Mode
-    if (state.mode === "home") home.focus();
-
-    // 4. Handle Sidebar Visibility and State
+    // 3. Handle Sidebar Visibility and State
     const showFiles = state.mode === "organize";
     sidebarEl.hidden = !showFiles;
     sidebarEmptyEl.hidden = showFiles;
 
-    // Apply collapse classes
+    // 4. Apply collapse classes
     primarySidebarEl.classList.toggle("is-collapsed", !state.sidebarOpen);
   });
 }

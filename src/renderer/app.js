@@ -52,7 +52,7 @@ mountTitlebar(titlebarEl, {
 });
 
 mountEditor(contentEl);
-const home = mountHome(homeEl);
+mountHome(homeEl);
 
 const sidebar = mountSidebar(sidebarEl, {
   onSelect: ({ path }) => {
@@ -60,7 +60,7 @@ const sidebar = mountSidebar(sidebarEl, {
   },
 });
 
-const toolbar = mountToolbar(toolbarEl, {
+mountToolbar(toolbarEl, {
   onChangeVault: async () => {
     const selectedPath = await window.smartnote.openVaultDialog();
     if (!selectedPath) {
@@ -82,7 +82,7 @@ mountEmptyState(emptyRoot, {
 
 // --- Initialize Router ---
 // Pass the mounted components so the router can trigger their UI methods (like .focus() or .setActive())
-initRouter({ home });
+initRouter();
 
 window.smartnote.onVaultOpened((selectedPath) => {
   openVault(selectedPath);
@@ -91,10 +91,6 @@ window.smartnote.onVaultOpened((selectedPath) => {
 async function openVault(nextPath) {
   updateState({ vaultPath: nextPath, selectedFilePath: null });
   sidebar.clearSelection();
-
-  const name = vaultNameFromPath(state.vaultPath);
-  toolbar.setVaultName(name);
-  home.setVaultName(name);
 
   const tree = await window.smartnote.getTree(state.vaultPath);
   sidebar.setTree(tree);
@@ -106,8 +102,6 @@ async function renderEmpty() {
   updateState({ vaultPath: null, selectedFilePath: null });
   sidebar.setTree([]);
   sidebar.clearSelection();
-  toolbar.setVaultName("");
-  home.setVaultName("");
   updateState({ mode: "onboarding" });
 }
 

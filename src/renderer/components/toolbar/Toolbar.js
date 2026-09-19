@@ -1,3 +1,6 @@
+import { subscribe } from "../../store.js";
+import { vaultNameFromPath } from "../../utils.js";
+
 export function mountToolbar(root, { onChangeVault }) {
   root.classList.add("toolbar");
   root.replaceChildren();
@@ -66,10 +69,12 @@ export function mountToolbar(root, { onChangeVault }) {
     }
   });
 
-  return {
-    setVaultName(name) {
-      nameEl.textContent = name || "";
-      nameEl.title = name || "";
-    },
-  };
+  function setVaultName(name) {
+    nameEl.textContent = name || "";
+    nameEl.title = name || "";
+  }
+
+  subscribe((state) => {
+    setVaultName(state.vaultPath ? vaultNameFromPath(state.vaultPath) : "");
+  });
 }

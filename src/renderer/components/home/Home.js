@@ -1,3 +1,6 @@
+import { subscribe } from "../../store.js";
+import { vaultNameFromPath } from "../../utils.js";
+
 /**
  * Home capture UI. Submit is visual-only this phase.
  */
@@ -73,27 +76,33 @@ export function mountHome(root) {
   panel.append(header, capture);
   root.append(panel);
 
-  return {
-    focus() {
-      // Defer so focus wins after rail/titlebar button clicks and unhide.
-      requestAnimationFrame(() => {
-        input.focus({ preventScroll: true });
-      });
-    },
-    clear() {
-      input.value = "";
-    },
-    setVaultName(name) {
-      const label = (name || "").trim();
-      if (!label) {
-        vaultName.textContent = "";
-        vaultLine.removeAttribute("title");
-        vaultLine.hidden = true;
-        return;
-      }
-      vaultName.textContent = label;
-      vaultLine.title = label;
-      vaultLine.hidden = false;
-    },
-  };
+  function setVaultName(name) {
+    const label = (name || "").trim();
+    if (!label) {
+      vaultName.textContent = "";
+      vaultLine.removeAttribute("title");
+      vaultLine.hidden = true;
+      return;
+    }
+    vaultName.textContent = label;
+    vaultLine.title = label;
+    vaultLine.hidden = false;
+  }
+
+  function focus() {
+    // Defer so focus wins after rail/titlebar button clicks and unhide.
+    requestAnimationFrame(() => {
+      input.focus({ preventScroll: true });
+    });
+  }
+  function clear() {
+    input.value = "";
+  }
+
+  subscribe((state) => {
+    setVaultName(state.vaultPath ? vaultNameFromPath(state.vaultPath) : "");
+    if (state.mode === "home") {
+      focus();
+    }
+  });
 }
