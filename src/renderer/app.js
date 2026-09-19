@@ -7,7 +7,7 @@ import { mountRail } from "./components/rail/Rail.js";
 import { mountHome } from "./components/home/Home.js";
 import { state, subscribe, updateState, constants } from "./store.js";
 import { initRouter } from "./router.js";
-
+import { vaultNameFromPath } from "./utils.js";
 const appEl = document.getElementById("app");
 const titlebarEl = document.getElementById("titlebar");
 const emptyRoot = document.getElementById("empty-state");
@@ -87,12 +87,6 @@ initRouter({ home });
 window.smartnote.onVaultOpened((selectedPath) => {
   openVault(selectedPath);
 });
-
-function vaultNameFromPath(folderPath) {
-  const normalized = folderPath.replace(/[\\/]+$/, "");
-  const parts = normalized.split(/[\\/]/);
-  return parts[parts.length - 1] || folderPath;
-}
 
 async function openVault(nextPath) {
   updateState({ vaultPath: nextPath, selectedFilePath: null });
