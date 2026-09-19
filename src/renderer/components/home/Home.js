@@ -99,9 +99,12 @@ export function mountHome(root) {
     input.value = "";
   }
 
-  subscribe((state) => {
-    setVaultName(state.vaultPath ? vaultNameFromPath(state.vaultPath) : "");
-    if (state.mode === "home") {
+  subscribe((s) => s.vaultPath, (vaultPath) => {
+    setVaultName(vaultPath ? vaultNameFromPath(vaultPath) : "");
+  });
+
+  subscribe((s) => s.mode, (mode, prevMode) => {
+    if (mode === "home" && prevMode !== "home") {
       focus();
     }
   });

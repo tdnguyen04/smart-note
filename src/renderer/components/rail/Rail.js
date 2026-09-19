@@ -35,10 +35,13 @@ export function mountRail(root, { onCompose, onOrganize, onProfile }) {
   bottom.append(profileBtn);
   root.append(top, bottom);
 
-  subscribe((state) => {
-    composeBtn.classList.toggle("is-active", state.mode === "home");
-    organizeBtn.classList.toggle("is-active", state.mode === "organize");
-  });
+  subscribe(
+    (s) => s.mode,
+    (mode) => {
+      composeBtn.classList.toggle("is-active", mode === "home");
+      organizeBtn.classList.toggle("is-active", mode === "organize");
+    }
+  );
 }
 
 function createRailButton({ label, glyph, onClick, className = "rail__btn" }) {

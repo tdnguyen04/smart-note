@@ -1,6 +1,5 @@
-import { state, subscribe, constants } from "./store.js";
+import { subscribe } from "./store.js";
 
-// Note: We move the element selections here because only the router needs to hide/show them.
 const appEl = document.getElementById("app");
 const emptyRoot = document.getElementById("empty-state");
 const shellEl = document.getElementById("shell");
@@ -10,27 +9,23 @@ const primarySidebarEl = document.getElementById("primary-sidebar");
 const sidebarEl = document.getElementById("sidebar");
 const sidebarEmptyEl = document.getElementById("sidebar-empty");
 
-
 export function initRouter() {
-  // We pass in references to the mounted components so the router can trigger their UI methods
+  subscribe((s) => s.vaultPath, (vaultPath) => {
+    appEl.classList.toggle("has-vault", vaultPath !== null);
+  });
 
-  subscribe((state) => {
-    // 1. App-level classes
-    appEl.classList.toggle("has-vault", state.vaultPath !== null);
+  subscribe((s) => s.mode, (mode) => {
+    shellEl.hidden = mode === "onboarding";
+    emptyRoot.hidden = mode !== "onboarding";
+    homeEl.hidden = mode !== "home";
+    contentEl.hidden = mode !== "organize" && mode !== "onboarding";
 
-    // 2. Main View Routing (The Switch)
-    shellEl.hidden = state.mode === "onboarding";
-    emptyRoot.hidden = state.mode !== "onboarding";
-
-    homeEl.hidden = state.mode !== "home";
-    contentEl.hidden = (state.mode !== "organize" && state.mode !== "onboarding");
-
-    // 3. Handle Sidebar Visibility and State
-    const showFiles = state.mode === "organize";
+    const showFiles = mode === "organize";
     sidebarEl.hidden = !showFiles;
     sidebarEmptyEl.hidden = showFiles;
+  });
 
-    // 4. Apply collapse classes
-    primarySidebarEl.classList.toggle("is-collapsed", !state.sidebarOpen);
+  subscribe((s) => s.sidebarOpen, (sidebarOpen) => {
+    primarySidebarEl.classList.toggle("is-collapsed", !sidebarOpen);
   });
 }

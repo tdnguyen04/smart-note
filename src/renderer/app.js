@@ -5,37 +5,37 @@ import { mountTitlebar } from "./components/titlebar/Titlebar.js";
 import { mountEditor } from "./components/editor/Editor.js";
 import { mountRail } from "./components/rail/Rail.js";
 import { mountHome } from "./components/home/Home.js";
-import { state, subscribe, updateState, constants } from "./store.js";
+import { state, updateState, constants } from "./store.js";
 import { initRouter } from "./router.js";
-import { vaultNameFromPath } from "./utils.js";
-const appEl = document.getElementById("app");
+
 const titlebarEl = document.getElementById("titlebar");
 const emptyRoot = document.getElementById("empty-state");
-const shellEl = document.getElementById("shell");
 const railEl = document.getElementById("rail");
-const primarySidebarEl = document.getElementById("primary-sidebar");
 const toolbarEl = document.getElementById("toolbar");
 const sidebarEl = document.getElementById("sidebar");
-const sidebarEmptyEl = document.getElementById("sidebar-empty");
 const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
 
 mountRail(railEl, {
   onCompose: () => {
-    if (state.vaultPath)
-      updateState({
-        mode: "home",
-        sidebarOpen: constants.sidebarOpenByMode.home,
-        selectedFilePath: null
-      });
+    if (!state.vaultPath) {
+      return;
+    }
+    updateState({
+      mode: "home",
+      sidebarOpen: constants.sidebarOpenByMode.home,
+      selectedFilePath: null,
+    });
   },
   onOrganize: () => {
-    if (state.vaultPath)
-      updateState({
-        mode: "organize",
-        sidebarOpen: constants.sidebarOpenByMode.organize,
-        selectedFilePath: null
-      });
+    if (!state.vaultPath) {
+      return;
+    }
+    updateState({
+      mode: "organize",
+      sidebarOpen: constants.sidebarOpenByMode.organize,
+      selectedFilePath: null,
+    });
   },
   onProfile: () => {
     // Settings / Change vault move here later.
@@ -53,12 +53,7 @@ mountTitlebar(titlebarEl, {
 
 mountEditor(contentEl);
 mountHome(homeEl);
-
-const sidebar = mountSidebar(sidebarEl, {
-  onSelect: ({ path }) => {
-    updateState({ selectedFilePath: path })
-  },
-});
+mountSidebar(sidebarEl);
 
 mountToolbar(toolbarEl, {
   onChangeVault: async () => {
@@ -66,7 +61,7 @@ mountToolbar(toolbarEl, {
     if (!selectedPath) {
       return;
     }
-    await openVault(selectedPath);
+    openVault(selectedPath);
   },
 });
 
@@ -76,33 +71,31 @@ mountEmptyState(emptyRoot, {
     if (!selectedPath) {
       return;
     }
-    await openVault(selectedPath);
+    openVault(selectedPath);
   },
 });
 
-// --- Initialize Router ---
-// Pass the mounted components so the router can trigger their UI methods (like .focus() or .setActive())
 initRouter();
 
 window.smartnote.onVaultOpened((selectedPath) => {
   openVault(selectedPath);
 });
 
-async function openVault(nextPath) {
-  updateState({ vaultPath: nextPath, selectedFilePath: null });
-  sidebar.clearSelection();
-
-  const tree = await window.smartnote.getTree(state.vaultPath);
-  sidebar.setTree(tree);
-
-  updateState({ mode: "home", sidebarOpen: constants.sidebarOpenByMode.home });
+function openVault(nextPath) {
+  updateState({
+    vaultPath: nextPath,
+    selectedFilePath: null,
+    mode: "home",
+    sidebarOpen: constants.sidebarOpenByMode.home,
+  });
 }
 
-async function renderEmpty() {
-  updateState({ vaultPath: null, selectedFilePath: null });
-  sidebar.setTree([]);
-  sidebar.clearSelection();
-  updateState({ mode: "onboarding" });
+function renderEmpty() {
+  updateState({
+    vaultPath: null,
+    selectedFilePath: null,
+    mode: "onboarding",
+  });
 }
 
 renderEmpty();

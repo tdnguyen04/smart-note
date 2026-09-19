@@ -1,4 +1,6 @@
-export function mountSidebar(root, { onSelect }) {
+import { subscribe, updateState } from "../../store.js";
+
+export function mountSidebar(root) {
   root.classList.add("sidebar");
   root.replaceChildren();
 
@@ -8,13 +10,19 @@ export function mountSidebar(root, { onSelect }) {
 
   let selectedPath = null;
   const expandedPaths = new Set();
+  let nodes = [];
+  let loadToken = 0;
 
-  function selectFile(filePath) {
+  function applySelectionHighlight(filePath) {
     selectedPath = filePath;
     root.querySelectorAll(".sidebar__item").forEach((el) => {
-      el.classList.toggle("is-selected", el.dataset.path === filePath);
+      el.classList.toggle("is-selected", Boolean(filePath) && el.dataset.path === filePath);
     });
-    onSelect?.({ path: filePath, type: "file" });
+  }
+
+  function selectFile(filePath) {
+    applySelectionHighlight(filePath);
+    updateState({ selectedFilePath: filePath });
   }
 
   function renderNode(node, depth) {
@@ -85,8 +93,6 @@ export function mountSidebar(root, { onSelect }) {
     return item;
   }
 
-  let nodes = [];
-
   function paint() {
     treeRoot.replaceChildren();
     for (const node of nodes) {
@@ -94,19 +100,38 @@ export function mountSidebar(root, { onSelect }) {
     }
   }
 
-  return {
-    setTree(nextNodes) {
-      nodes = Array.isArray(nextNodes) ? nextNodes : [];
+  function clearTree() {
+    nodes = [];
+    expandedPaths.clear();
+    selectedPath = null;
+    paint();
+  }
+
+  subscribe((s) => s.vaultPath, async (vaultPath) => {
+    const token = ++loadToken;
+    if (!vaultPath) {
+      clearTree();
+      return;
+    }
+
+    try {
+      const tree = await window.smartnote.getTree(vaultPath);
+      if (token !== loadToken) {
+        return;
+      }
+      nodes = Array.isArray(tree) ? tree : [];
+      expandedPaths.clear();
       paint();
-    },
-    clearSelection() {
-      selectedPath = null;
-      root
-        .querySelectorAll(".sidebar__item.is-selected")
-        .forEach((el) => el.classList.remove("is-selected"));
-    },
-    getSelectedPath() {
-      return selectedPath;
-    },
-  };
+    } catch (error) {
+      if (token !== loadToken) {
+        return;
+      }
+      console.error(error);
+      clearTree();
+    }
+  });
+
+  subscribe((s) => s.selectedFilePath, (filePath) => {
+    applySelectionHighlight(filePath);
+  });
 }

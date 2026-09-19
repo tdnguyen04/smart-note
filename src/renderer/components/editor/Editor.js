@@ -193,10 +193,10 @@ export function mountEditor(root) {
     mode = nextMode === "preview" ? "preview" : "raw";
   }
 
-  subscribe(async (state) => {
+  subscribe((s) => s.selectedFilePath, async (selectedFilePath) => {
     try {
-      if (state.selectedFilePath) {
-        await openFile(state.selectedFilePath);
+      if (selectedFilePath) {
+        await openFile(selectedFilePath);
       } else {
         await clear();
       }

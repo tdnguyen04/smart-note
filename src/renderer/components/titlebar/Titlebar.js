@@ -45,8 +45,5 @@ export function mountTitlebar(root, { onToggleSidebar }) {
     );
   }
 
-  subscribe((state) => {
-    // title.textContent = state.vaultPath ? vaultNameFromPath(state.vaultPath) : "SmartNote";
-    setSidebarOpen(state.sidebarOpen);
-  });
+  subscribe((s) => s.sidebarOpen, setSidebarOpen);
 }

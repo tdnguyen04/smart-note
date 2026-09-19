@@ -74,7 +74,7 @@ export function mountToolbar(root, { onChangeVault }) {
     nameEl.title = name || "";
   }
 
-  subscribe((state) => {
-    setVaultName(state.vaultPath ? vaultNameFromPath(state.vaultPath) : "");
+  subscribe((s) => s.vaultPath, (vaultPath) => {
+    setVaultName(vaultPath ? vaultNameFromPath(vaultPath) : "");
   });
 }
