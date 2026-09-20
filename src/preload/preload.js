@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld("smartnote", {
   readFile: (filePath) => ipcRenderer.invoke("vault:read-file", filePath),
   writeFile: (filePath, content) =>
     ipcRenderer.invoke("vault:write-file", filePath, content),
+  inspectVault: (rootPath) => ipcRenderer.invoke("vault:inspect", rootPath),
+  confirmNonNotes: (payload) =>
+    ipcRenderer.invoke("vault:confirm-non-notes", payload),
   getSettings: () => ipcRenderer.invoke("settings:get"),
   setSettings: (partial) => ipcRenderer.invoke("settings:set", partial),
   onVaultOpened: (callback) => {

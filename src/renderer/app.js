@@ -52,42 +52,61 @@ mountTitlebar(titlebarEl, {
 });
 
 mountEditor(contentEl);
-mountHome(homeEl);
+mountHome(homeEl, { onChangeVault: () => pickAndOpenVault() });
 mountSidebar(sidebarEl);
 
 mountToolbar(toolbarEl, {
-  onChangeVault: async () => {
-    const selectedPath = await window.smartnote.openVaultDialog();
-    if (!selectedPath) {
-      return;
-    }
-    openVault(selectedPath);
-  },
+  onChangeVault: () => pickAndOpenVault(),
 });
 
 mountOnboarding(onboardingEl, {
-  onOpenVault: async () => {
-    const selectedPath = await window.smartnote.openVaultDialog();
-    if (!selectedPath) {
-      return;
-    }
-    openVault(selectedPath);
-  },
+  onOpenVault: () => pickAndOpenVault(),
 });
 
 initRouter();
 
 window.smartnote.onVaultOpened((selectedPath) => {
-  openVault(selectedPath);
+  void openVault(selectedPath);
 });
 
-function openVault(nextPath) {
+/**
+ * Folder dialog → openVault (inspect / warn / persist).
+ * @returns {Promise<boolean>}
+ */
+async function pickAndOpenVault() {
+  const selectedPath = await window.smartnote.openVaultDialog();
+  if (!selectedPath) {
+    return false;
+  }
+  return openVault(selectedPath);
+}
+
+/**
+ * Inspect for non-notes, optionally warn, persist, then enter Home.
+ * @returns {Promise<boolean>}
+ */
+async function openVault(nextPath) {
+  if (!nextPath) {
+    return false;
+  }
+
+  const inspect = await window.smartnote.inspectVault(nextPath);
+  if (inspect.nonNoteCount > 0) {
+    const choice = await window.smartnote.confirmNonNotes(inspect);
+    if (choice === "pick-another") {
+      // Do not persist the rejected path; keep any previous settings.
+      return pickAndOpenVault();
+    }
+  }
+
+  await window.smartnote.setSettings({ mainVaultPath: nextPath });
   updateState({
     vaultPath: nextPath,
     selectedFilePath: null,
     mode: "home",
     sidebarOpen: constants.sidebarOpenByMode.home,
   });
+  return true;
 }
 
 function renderOnboarding() {
@@ -98,4 +117,17 @@ function renderOnboarding() {
   });
 }
 
-renderOnboarding();
+async function boot() {
+  const settings = await window.smartnote.getSettings();
+  if (settings?.mainVaultPath) {
+    const opened = await openVault(settings.mainVaultPath);
+    if (!opened && !state.vaultPath) {
+      await window.smartnote.setSettings({ mainVaultPath: null });
+      renderOnboarding();
+    }
+    return;
+  }
+  renderOnboarding();
+}
+
+void boot();

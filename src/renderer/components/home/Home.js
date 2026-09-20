@@ -4,7 +4,7 @@ import { vaultNameFromPath } from "../../utils.js";
 /**
  * Home capture UI. Submit is visual-only this phase.
  */
-export function mountHome(root) {
+export function mountHome(root, { onChangeVault } = {}) {
   root.classList.add("home");
   root.replaceChildren();
 
@@ -34,8 +34,14 @@ export function mountHome(root) {
   const vaultLabel = document.createElement("span");
   vaultLabel.className = "home__vault-label";
 
-  const vaultName = document.createElement("span");
+  const vaultName = document.createElement("button");
+  vaultName.type = "button";
   vaultName.className = "home__vault-name";
+  vaultName.title = "Change vault";
+  vaultName.setAttribute("aria-label", "Change vault");
+  vaultName.addEventListener("click", () => {
+    onChangeVault?.();
+  });
 
   vaultLabel.append(document.createTextNode("Saving to "), vaultName);
   vaultLine.append(vaultIcon, vaultLabel);

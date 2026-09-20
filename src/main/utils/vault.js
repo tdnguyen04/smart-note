@@ -153,10 +153,109 @@ async function writeFile(filePath, content) {
   }
 }
 
+const INSPECT_SAMPLE_CAP = 5;
+const INSPECT_COUNT_CAP = 100;
+
+/**
+ * Walks the vault for files whose extension is not in TEXT_EXTENSIONS.
+ * Does not read file contents. Caps sample names and optional count.
+ */
+async function inspectVault(rootPath) {
+  const result = { nonNoteCount: 0, sampleNames: [] };
+
+  if (!rootPath || typeof rootPath !== "string") {
+    return result;
+  }
+
+  try {
+    const stat = await fs.stat(rootPath);
+    if (!stat.isDirectory()) {
+      return result;
+    }
+  } catch {
+    return result;
+  }
+
+  await walkNonNotes(rootPath, result);
+  return result;
+}
+
+async function walkNonNotes(dirPath, result) {
+  if (result.nonNoteCount >= INSPECT_COUNT_CAP) {
+    return;
+  }
+
+  let entries;
+  try {
+    entries = await fs.readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const entry of entries) {
+    if (result.nonNoteCount >= INSPECT_COUNT_CAP) {
+      return;
+    }
+
+    const entryPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      await walkNonNotes(entryPath, result);
+    } else if (entry.isFile() && !isTextLikePath(entryPath)) {
+      result.nonNoteCount += 1;
+      if (result.sampleNames.length < INSPECT_SAMPLE_CAP) {
+        result.sampleNames.push(entry.name);
+      }
+    }
+  }
+}
+
+/**
+ * Native warning when a vault has non-note files.
+ * @returns {"continue" | "pick-another"}
+ */
+async function confirmNonNotes({ nonNoteCount = 0, sampleNames = [] } = {}) {
+  const win = BrowserWindow.getFocusedWindow();
+  const samples = sampleNames.filter(Boolean).slice(0, INSPECT_SAMPLE_CAP);
+  const sampleBlock =
+    samples.length > 0
+      ? `\n\nExamples:\n• ${samples.join("\n• ")}`
+      : "";
+  const countLabel =
+    nonNoteCount >= INSPECT_COUNT_CAP
+      ? `${INSPECT_COUNT_CAP}+`
+      : String(nonNoteCount);
+
+  const options = {
+    type: "warning",
+    title: "Vault contains other files",
+    message: "This folder contains files SmartNote won’t edit.",
+    detail: `Found ${countLabel} non-note file(s). You can continue and ignore them, or choose another folder.${sampleBlock}`,
+    buttons: ["Continue", "Choose another folder"],
+    defaultId: 0,
+    cancelId: 1,
+    noLink: true,
+  };
+
+  try {
+    await setPointerFrozen(win, true);
+
+    const { response } =
+      win && !win.isDestroyed()
+        ? await dialog.showMessageBox(win, options)
+        : await dialog.showMessageBox(options);
+
+    return response === 0 ? "continue" : "pick-another";
+  } finally {
+    await setPointerFrozen(win, false);
+  }
+}
+
 module.exports = {
   openVaultDialog,
   getTree,
   readFile,
   writeFile,
   isTextLikePath,
+  inspectVault,
+  confirmNonNotes,
 };
