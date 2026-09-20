@@ -1,7 +1,7 @@
 const { ipcMain, BrowserWindow } = require("electron");
 const { openVaultDialog, getTree, readFile, writeFile } = require("./vault");
 const { getSettings, setSettings } = require("./settings");
-const { popupFileMenu } = require("./menu");
+const { popupFileMenu } = require("./nativeFileMenu");
 
 function registerIpcHandlers() {
   ipcMain.handle("vault:open-dialog", async () => openVaultDialog());

@@ -1,17 +1,10 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 const { registerIpcHandlers } = require("./ipc");
-const { createAppMenu } = require("./menu");
+const { createAppNativeMenu } = require("./nativeFileMenu");
+const devSetup = require("./devSetup");
 
-const projectRoot = path.join(__dirname, "..", "..");
-const TITLEBAR_HEIGHT = 36;
-const isDev = !app.isPackaged;
-
-if (isDev) {
-  require("electron-reload")(projectRoot, {
-    electron: path.join(projectRoot, "node_modules", ".bin", "electron"),
-  });
-}
+devSetup.setupHotReload(app);
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -26,7 +19,7 @@ function createWindow() {
     titleBarOverlay: {
       color: "#ffffff",
       symbolColor: "#111111",
-      height: TITLEBAR_HEIGHT,
+      height: 36,
     },
     webPreferences: {
       nodeIntegration: false,
@@ -44,25 +37,14 @@ function createWindow() {
     win.show();
   });
 
-  if (isDev) {
-    win.webContents.on("before-input-event", (event, input) => {
-      if (
-        (input.control || input.meta) &&
-        input.shift &&
-        input.key.toLowerCase() === "i"
-      ) {
-        win.webContents.toggleDevTools();
-        event.preventDefault();
-      }
-    });
-  }
+  devSetup.setupDevTools(app, win);
 
   return win;
 }
 
 app.whenReady().then(() => {
   registerIpcHandlers();
-  createAppMenu();
+  createAppNativeMenu();
   createWindow();
 });
 

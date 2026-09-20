@@ -34,7 +34,7 @@ function buildFileSubmenu() {
   return fileSubmenu;
 }
 
-function createAppMenu() {
+function createAppNativeMenu() {
   const template = [
     {
       label: "File",
@@ -66,4 +66,4 @@ function popupFileMenu(browserWindow, x, y) {
   menu.popup(options);
 }
 
-module.exports = { createAppMenu, popupFileMenu };
+module.exports = { createAppNativeMenu, popupFileMenu };
