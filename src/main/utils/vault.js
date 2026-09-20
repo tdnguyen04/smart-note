@@ -156,31 +156,105 @@ async function writeFile(filePath, content) {
 const INSPECT_SAMPLE_CAP = 5;
 const INSPECT_COUNT_CAP = 100;
 
+/** Directories we never scan for the non-note heads-up. */
+const INSPECT_SKIP_DIRS = new Set([
+  ".git",
+  ".svn",
+  ".hg",
+  "node_modules",
+  ".trash",
+  ".Trash",
+  "$RECYCLE.BIN",
+  "System Volume Information",
+]);
+
+/** OS/editor noise — not useful as “example” non-notes. */
+const INSPECT_SKIP_FILES = new Set([
+  ".ds_store",
+  "thumbs.db",
+  "desktop.ini",
+  "icon\r",
+]);
+
+/** Prefer these when picking sample names for the dialog. */
+const SAMPLE_PREFERRED_EXT = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".svg",
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".ppt",
+  ".pptx",
+  ".zip",
+  ".mp3",
+  ".mp4",
+  ".mov",
+]);
+
+function shouldSkipDir(name) {
+  if (!name) return true;
+  if (INSPECT_SKIP_DIRS.has(name)) return true;
+  // Hidden / system folders (e.g. .obsidian config trees, .vscode)
+  if (name.startsWith(".")) return true;
+  return false;
+}
+
+function shouldSkipFile(name) {
+  if (!name) return true;
+  if (INSPECT_SKIP_FILES.has(name.toLowerCase())) return true;
+  return false;
+}
+
+function isPreferredSample(filePath) {
+  return SAMPLE_PREFERRED_EXT.has(path.extname(filePath).toLowerCase());
+}
+
 /**
  * Walks the vault for files whose extension is not in TEXT_EXTENSIONS.
- * Does not read file contents. Caps sample names and optional count.
+ * Skips hidden/system trees so samples match what users expect.
+ * Does not read file contents. Caps sample names and count.
  */
 async function inspectVault(rootPath) {
-  const result = { nonNoteCount: 0, sampleNames: [] };
+  const result = {
+    nonNoteCount: 0,
+    sampleNames: [],
+    preferredSamples: [],
+  };
 
   if (!rootPath || typeof rootPath !== "string") {
-    return result;
+    return { nonNoteCount: 0, sampleNames: [] };
   }
 
   try {
     const stat = await fs.stat(rootPath);
     if (!stat.isDirectory()) {
-      return result;
+      return { nonNoteCount: 0, sampleNames: [] };
     }
   } catch {
-    return result;
+    return { nonNoteCount: 0, sampleNames: [] };
   }
 
-  await walkNonNotes(rootPath, result);
-  return result;
+  await walkNonNotes(rootPath, rootPath, result);
+
+  // Prefer recognizable media/docs in the dialog; fall back to any samples.
+  const samples =
+    result.preferredSamples.length > 0
+      ? result.preferredSamples
+      : result.sampleNames;
+
+  return {
+    nonNoteCount: result.nonNoteCount,
+    sampleNames: samples.slice(0, INSPECT_SAMPLE_CAP),
+  };
 }
 
-async function walkNonNotes(dirPath, result) {
+async function walkNonNotes(dirPath, rootPath, result) {
   if (result.nonNoteCount >= INSPECT_COUNT_CAP) {
     return;
   }
@@ -198,39 +272,57 @@ async function walkNonNotes(dirPath, result) {
     }
 
     const entryPath = path.join(dirPath, entry.name);
+
     if (entry.isDirectory()) {
-      await walkNonNotes(entryPath, result);
-    } else if (entry.isFile() && !isTextLikePath(entryPath)) {
-      result.nonNoteCount += 1;
-      if (result.sampleNames.length < INSPECT_SAMPLE_CAP) {
-        result.sampleNames.push(entry.name);
+      if (shouldSkipDir(entry.name)) {
+        continue;
       }
+      await walkNonNotes(entryPath, rootPath, result);
+      continue;
+    }
+
+    if (!entry.isFile() || shouldSkipFile(entry.name)) {
+      continue;
+    }
+
+    if (isTextLikePath(entryPath)) {
+      continue;
+    }
+
+    result.nonNoteCount += 1;
+
+    const rel = path.relative(rootPath, entryPath) || entry.name;
+    const label = rel.split(path.sep).join("/");
+
+    if (result.sampleNames.length < INSPECT_SAMPLE_CAP) {
+      result.sampleNames.push(label);
+    }
+    if (
+      isPreferredSample(entryPath) &&
+      result.preferredSamples.length < INSPECT_SAMPLE_CAP
+    ) {
+      result.preferredSamples.push(label);
     }
   }
 }
 
 /**
- * Native warning when a vault has non-note files.
+ * Friendly heads-up when a vault has non-note files.
+ * Soft tone on purpose — not a system/security warning.
  * @returns {"continue" | "pick-another"}
  */
 async function confirmNonNotes({ nonNoteCount = 0, sampleNames = [] } = {}) {
   const win = BrowserWindow.getFocusedWindow();
-  const samples = sampleNames.filter(Boolean).slice(0, INSPECT_SAMPLE_CAP);
-  const sampleBlock =
-    samples.length > 0
-      ? `\n\nExamples:\n• ${samples.join("\n• ")}`
-      : "";
-  const countLabel =
-    nonNoteCount >= INSPECT_COUNT_CAP
-      ? `${INSPECT_COUNT_CAP}+`
-      : String(nonNoteCount);
+  const samples = sampleNames.filter(Boolean).slice(0, 3);
+  const sampleHint =
+    samples.length > 0 ? ` (e.g. ${samples.join(", ")})` : "";
 
   const options = {
-    type: "warning",
-    title: "Vault contains other files",
-    message: "This folder contains files SmartNote won’t edit.",
-    detail: `Found ${countLabel} non-note file(s). You can continue and ignore them, or choose another folder.${sampleBlock}`,
-    buttons: ["Continue", "Choose another folder"],
+    type: "info",
+    title: "SmartNote",
+    message: "This folder has a few files SmartNote won’t open.",
+    detail: `Things like images or PDFs are fine to leave here${sampleHint}. You can still use this folder for notes.`,
+    buttons: ["Use this folder", "Pick another"],
     defaultId: 0,
     cancelId: 1,
     noLink: true,
