@@ -10,19 +10,28 @@ async function setPointerFrozen(win, frozen) {
   );
 }
 
-async function openVaultDialog() {
+async function openVaultDialog(options = {}) {
   // No parent window: keeps the dialog independent (main window can take
   // focus) and avoids the Windows modal-cursor bug. Freeze pointer events
   // on the page so clicks/hover don't operate the UI while the dialog is up.
   const win = BrowserWindow.getFocusedWindow();
+  const forOnboarding = options.intent === "onboarding";
 
   try {
     await setPointerFrozen(win, true);
 
-    const result = await dialog.showOpenDialog({
-      title: "Open Vault",
+    const dialogOptions = {
+      title: forOnboarding ? "Choose a folder for your notes" : "Open Vault",
       properties: ["openDirectory"],
-    });
+    };
+
+    // `message` is shown on macOS folder dialogs; Windows relies on onboarding copy.
+    if (forOnboarding) {
+      dialogOptions.message =
+        "An empty folder works best — your notes stay in one place.";
+    }
+
+    const result = await dialog.showOpenDialog(dialogOptions);
 
     if (result.canceled || result.filePaths.length === 0) {
       return null;

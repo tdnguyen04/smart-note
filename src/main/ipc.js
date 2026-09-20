@@ -10,7 +10,9 @@ const {
 const { getSettings, setSettings } = require("./utils/settings");
 
 function registerIpcHandlers() {
-  ipcMain.handle("vault:open-dialog", async () => openVaultDialog());
+  ipcMain.handle("vault:open-dialog", async (_event, options) =>
+    openVaultDialog(options || {})
+  );
   ipcMain.handle("vault:get-tree", async (_event, rootPath) => getTree(rootPath));
   ipcMain.handle("vault:read-file", async (_event, filePath) => readFile(filePath));
   ipcMain.handle("vault:write-file", async (_event, filePath, content) =>

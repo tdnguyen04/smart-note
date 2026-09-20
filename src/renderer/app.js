@@ -60,7 +60,7 @@ mountToolbar(toolbarEl, {
 });
 
 mountOnboarding(onboardingEl, {
-  onOpenVault: () => pickAndOpenVault(),
+  onOpenVault: () => pickAndOpenVault({ intent: "onboarding" }),
 });
 
 initRouter();
@@ -69,12 +69,26 @@ window.smartnote.onVaultOpened((selectedPath) => {
   void openVault(selectedPath);
 });
 
+function normalizePathKey(filePath) {
+  if (!filePath || typeof filePath !== "string") {
+    return "";
+  }
+  return filePath.replace(/[\\/]+$/, "").replace(/\\/g, "/").toLowerCase();
+}
+
+function sameVaultPath(a, b) {
+  const left = normalizePathKey(a);
+  const right = normalizePathKey(b);
+  return Boolean(left) && left === right;
+}
+
 /**
  * Folder dialog → openVault (inspect / warn / persist).
+ * @param {{ intent?: "onboarding" | "change" }} [options]
  * @returns {Promise<boolean>}
  */
-async function pickAndOpenVault() {
-  const selectedPath = await window.smartnote.openVaultDialog();
+async function pickAndOpenVault(options = {}) {
+  const selectedPath = await window.smartnote.openVaultDialog(options);
   if (!selectedPath) {
     return false;
   }
@@ -82,7 +96,7 @@ async function pickAndOpenVault() {
 }
 
 /**
- * Inspect for non-notes, optionally warn, persist, then enter Home.
+ * Inspect for non-notes, optionally warn (once per accepted folder), persist, Home.
  * @returns {Promise<boolean>}
  */
 async function openVault(nextPath) {
@@ -91,15 +105,30 @@ async function openVault(nextPath) {
   }
 
   const inspect = await window.smartnote.inspectVault(nextPath);
-  if (inspect.nonNoteCount > 0) {
+  const settings = await window.smartnote.getSettings();
+  const alreadyAccepted = sameVaultPath(
+    nextPath,
+    settings?.acceptedNonNoteVaultPath
+  );
+
+  if (inspect.nonNoteCount > 0 && !alreadyAccepted) {
     const choice = await window.smartnote.confirmNonNotes(inspect);
     if (choice === "pick-another") {
       // Do not persist the rejected path; keep any previous settings.
-      return pickAndOpenVault();
+      const intent =
+        state.mode === "onboarding" ? { intent: "onboarding" } : {};
+      return pickAndOpenVault(intent);
     }
   }
 
-  await window.smartnote.setSettings({ mainVaultPath: nextPath });
+  const patch = { mainVaultPath: nextPath };
+  if (inspect.nonNoteCount > 0) {
+    patch.acceptedNonNoteVaultPath = nextPath;
+  } else if (settings?.acceptedNonNoteVaultPath) {
+    patch.acceptedNonNoteVaultPath = null;
+  }
+
+  await window.smartnote.setSettings(patch);
   updateState({
     vaultPath: nextPath,
     selectedFilePath: null,
@@ -122,7 +151,10 @@ async function boot() {
   if (settings?.mainVaultPath) {
     const opened = await openVault(settings.mainVaultPath);
     if (!opened && !state.vaultPath) {
-      await window.smartnote.setSettings({ mainVaultPath: null });
+      await window.smartnote.setSettings({
+        mainVaultPath: null,
+        acceptedNonNoteVaultPath: null,
+      });
       renderOnboarding();
     }
     return;

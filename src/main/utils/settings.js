@@ -11,6 +11,8 @@ const SETTINGS_FILE = "settings.json";
 
 const defaultSettings = {
   mainVaultPath: null,
+  /** Last vault path the user accepted after a non-note heads-up (skip re-prompt). */
+  acceptedNonNoteVaultPath: null,
 };
 
 function getSettingsPath() {
@@ -48,27 +50,29 @@ async function readSettingsFile() {
 /**
  * Returns settings. If mainVaultPath is set but missing/not a directory, it is
  * treated as null (caller can treat that as “needs onboarding”).
+ * acceptedNonNoteVaultPath is cleared when it is no longer a directory.
  */
 async function getSettings() {
   const settings = await readSettingsFile();
-  const mainVaultPath = settings.mainVaultPath;
-
-  if (!(await pathIsDirectory(mainVaultPath))) {
-    return {
-      ...settings,
-      mainVaultPath: null,
-    };
-  }
+  const mainVaultPath = (await pathIsDirectory(settings.mainVaultPath))
+    ? settings.mainVaultPath
+    : null;
+  const acceptedNonNoteVaultPath = (await pathIsDirectory(
+    settings.acceptedNonNoteVaultPath
+  ))
+    ? settings.acceptedNonNoteVaultPath
+    : null;
 
   return {
     ...settings,
     mainVaultPath,
+    acceptedNonNoteVaultPath,
   };
 }
 
 /**
  * Merges a partial settings object and writes settings.json.
- * Invalid mainVaultPath values are stored as null.
+ * Invalid mainVaultPath / acceptedNonNoteVaultPath values are stored as null.
  */
 async function setSettings(partial = {}) {
   const current = await readSettingsFile();
@@ -82,6 +86,14 @@ async function setSettings(partial = {}) {
     !(await pathIsDirectory(next.mainVaultPath))
   ) {
     next.mainVaultPath = null;
+  }
+
+  if (
+    Object.prototype.hasOwnProperty.call(partial, "acceptedNonNoteVaultPath") &&
+    next.acceptedNonNoteVaultPath != null &&
+    !(await pathIsDirectory(next.acceptedNonNoteVaultPath))
+  ) {
+    next.acceptedNonNoteVaultPath = null;
   }
 
   await fs.mkdir(path.dirname(getSettingsPath()), { recursive: true });

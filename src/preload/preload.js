@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("smartnote", {
-  openVaultDialog: () => ipcRenderer.invoke("vault:open-dialog"),
+  openVaultDialog: (options) => ipcRenderer.invoke("vault:open-dialog", options),
   getTree: (rootPath) => ipcRenderer.invoke("vault:get-tree", rootPath),
   readFile: (filePath) => ipcRenderer.invoke("vault:read-file", filePath),
   writeFile: (filePath, content) =>
