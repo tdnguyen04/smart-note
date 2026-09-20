@@ -13,5 +13,4 @@ contextBridge.exposeInMainWorld("smartnote", {
     ipcRenderer.on("vault:opened", listener);
     return () => ipcRenderer.removeListener("vault:opened", listener);
   },
-  popupFileMenu: (position) => ipcRenderer.invoke("menu:popup-file", position),
 });

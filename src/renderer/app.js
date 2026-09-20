@@ -1,4 +1,4 @@
-import { mountEmptyState } from "./components/empty-state/EmptyState.js";
+import { mountOnboarding } from "./components/onboarding/Onboarding.js";
 import { mountSidebar } from "./components/sidebar/Sidebar.js";
 import { mountToolbar } from "./components/toolbar/Toolbar.js";
 import { mountTitlebar } from "./components/titlebar/Titlebar.js";
@@ -9,7 +9,7 @@ import { state, updateState, constants } from "./store.js";
 import { initRouter } from "./router.js";
 
 const titlebarEl = document.getElementById("titlebar");
-const emptyRoot = document.getElementById("empty-state");
+const onboardingEl = document.getElementById("onboarding");
 const railEl = document.getElementById("rail");
 const toolbarEl = document.getElementById("toolbar");
 const sidebarEl = document.getElementById("sidebar");
@@ -65,7 +65,7 @@ mountToolbar(toolbarEl, {
   },
 });
 
-mountEmptyState(emptyRoot, {
+mountOnboarding(onboardingEl, {
   onOpenVault: async () => {
     const selectedPath = await window.smartnote.openVaultDialog();
     if (!selectedPath) {
@@ -90,7 +90,7 @@ function openVault(nextPath) {
   });
 }
 
-function renderEmpty() {
+function renderOnboarding() {
   updateState({
     vaultPath: null,
     selectedFilePath: null,
@@ -98,4 +98,4 @@ function renderEmpty() {
   });
 }
 
-renderEmpty();
+renderOnboarding();

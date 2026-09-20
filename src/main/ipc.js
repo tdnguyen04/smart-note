@@ -1,7 +1,6 @@
-const { ipcMain, BrowserWindow } = require("electron");
+const { ipcMain } = require("electron");
 const { openVaultDialog, getTree, readFile, writeFile } = require("./utils/vault");
 const { getSettings, setSettings } = require("./utils/settings");
-const { popupFileMenu } = require("./nativeFileMenu");
 
 function registerIpcHandlers() {
   ipcMain.handle("vault:open-dialog", async () => openVaultDialog());
@@ -12,13 +11,6 @@ function registerIpcHandlers() {
   );
   ipcMain.handle("settings:get", async () => getSettings());
   ipcMain.handle("settings:set", async (_event, partial) => setSettings(partial));
-  ipcMain.handle("menu:popup-file", (event, position = {}) => {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    if (!win) {
-      return;
-    }
-    popupFileMenu(win, position.x, position.y);
-  });
 }
 
 module.exports = { registerIpcHandlers };

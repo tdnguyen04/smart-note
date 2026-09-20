@@ -1,7 +1,7 @@
 import { subscribe } from "./store.js";
 
 const appEl = document.getElementById("app");
-const emptyRoot = document.getElementById("empty-state");
+const onboardingEl = document.getElementById("onboarding");
 const shellEl = document.getElementById("shell");
 const homeEl = document.getElementById("home");
 const contentEl = document.getElementById("content");
@@ -16,7 +16,7 @@ export function initRouter() {
 
   subscribe((s) => s.mode, (mode) => {
     shellEl.hidden = mode === "onboarding";
-    emptyRoot.hidden = mode !== "onboarding";
+    onboardingEl.hidden = mode !== "onboarding";
     homeEl.hidden = mode !== "home";
     contentEl.hidden = mode !== "organize" && mode !== "onboarding";
 

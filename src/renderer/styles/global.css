@@ -25,7 +25,7 @@ body {
   display: none;
 }
 
-#app:not(.has-vault) #empty-state {
+#app:not(.has-vault) #onboarding {
   flex: 1;
 }
 
