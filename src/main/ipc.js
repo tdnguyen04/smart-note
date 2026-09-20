@@ -1,6 +1,6 @@
 const { ipcMain, BrowserWindow } = require("electron");
-const { openVaultDialog, getTree, readFile, writeFile } = require("./vault");
-const { getSettings, setSettings } = require("./settings");
+const { openVaultDialog, getTree, readFile, writeFile } = require("./utils/vault");
+const { getSettings, setSettings } = require("./utils/settings");
 const { popupFileMenu } = require("./nativeFileMenu");
 
 function registerIpcHandlers() {

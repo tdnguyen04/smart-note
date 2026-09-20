@@ -9,7 +9,7 @@ function setupHotReload(app) {
   }
 }
 
-function setupDevTools(app, win) {
+function setupDevToolsShortcut(app, win) {
   if (!app.isPackaged) {
     win.webContents.on("before-input-event", (event, input) => {
       // Control + Shift + I to open dev tools
@@ -27,5 +27,5 @@ function setupDevTools(app, win) {
 
 module.exports = {
   setupHotReload,
-  setupDevTools,
+  setupDevToolsShortcut,
 };

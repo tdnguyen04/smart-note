@@ -1,3 +1,8 @@
+/**
+ * Settings are stored in a JSON file in the user's data directory.
+ * Settings are used to store the main vault path and other settings.
+ */
+
 const { app } = require("electron");
 const fs = require("fs/promises");
 const path = require("path");
