@@ -63,8 +63,6 @@ mountOnboarding(onboardingEl, {
   onOpenVault: () => pickAndOpenVault({ intent: "onboarding" }),
 });
 
-initRouter();
-
 window.smartnote.onVaultOpened((selectedPath) => {
   void openVault(selectedPath);
 });
@@ -162,4 +160,5 @@ async function boot() {
   renderOnboarding();
 }
 
-void boot();
+await boot();
+initRouter();
