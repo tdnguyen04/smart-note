@@ -16,4 +16,5 @@ contextBridge.exposeInMainWorld("smartnote", {
     ipcRenderer.on("vault:opened", listener);
     return () => ipcRenderer.removeListener("vault:opened", listener);
   },
+  createNote: (vaultPath, content) => ipcRenderer.invoke("vault:create-note", vaultPath, content),
 });

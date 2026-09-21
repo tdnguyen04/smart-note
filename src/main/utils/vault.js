@@ -351,6 +351,44 @@ async function confirmNonNotes({ nonNoteCount = 0, sampleNames = [] } = {}) {
   }
 }
 
+function formatCaptureFilenameByDate(date) {
+  // YYYY-MM-DD HH.mm Note
+  // remember to do padding for hours and minutes
+  const year = date.getFullYear().toString();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return year + "-" + month + "-" + day + " " + hours + "." + minutes + " Note";
+}
+
+async function createNote(filePath, content) {
+  const noteTitle = formatCaptureFilenameByDate(new Date());
+  let targetPath = path.join(filePath, noteTitle + ".md");
+  // Handle the case where the same name already exists
+  let id = 0;
+
+  // We should not create more than 100 notes with the same name
+  while (id < 100) {
+    try {
+      await fs.writeFile(targetPath, content, { flag: "wx" });
+      return { ok: true, path: targetPath };
+    } catch (error) {
+      if (error && error.code === "EEXIST") {
+        id += 1;
+        targetPath = path.join(filePath, `${noteTitle} (${id}).md`);
+        continue;
+      }
+      return {
+        ok: false,
+        reason: "write-error",
+        message: error instanceof Error ? error.message : "Failed to create note",
+      };
+    }
+  }
+  return { ok: false, reason: "name-collision", message: "Could not find a free filename" };
+}
+
 module.exports = {
   openVaultDialog,
   getTree,
@@ -359,4 +397,5 @@ module.exports = {
   isTextLikePath,
   inspectVault,
   confirmNonNotes,
+  createNote,
 };

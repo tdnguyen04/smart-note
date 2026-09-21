@@ -6,6 +6,7 @@ const {
   writeFile,
   inspectVault,
   confirmNonNotes,
+  createNote,
 } = require("./utils/vault");
 const { getSettings, setSettings } = require("./utils/settings");
 
@@ -22,6 +23,7 @@ function registerIpcHandlers() {
   ipcMain.handle("vault:confirm-non-notes", async (_event, payload) =>
     confirmNonNotes(payload)
   );
+  ipcMain.handle("vault:create-note", async (_event, filePath, content)  => createNote(filePath, content));
   ipcMain.handle("settings:get", async () => getSettings());
   ipcMain.handle("settings:set", async (_event, partial) => setSettings(partial));
 }
