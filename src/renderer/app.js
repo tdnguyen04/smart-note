@@ -8,15 +8,17 @@ import { mountHome } from "./components/home/Home.js";
 import { state, updateState, constants } from "./store.js";
 import { initRouter } from "./router.js";
 
-const titlebarEl = document.getElementById("titlebar");
-const onboardingEl = document.getElementById("onboarding");
-const railEl = document.getElementById("rail");
-const toolbarEl = document.getElementById("toolbar");
-const sidebarEl = document.getElementById("sidebar");
-const homeEl = document.getElementById("home");
-const contentEl = document.getElementById("content");
+const elements = {
+  titlebar: document.getElementById("titlebar"),
+  onboarding: document.getElementById("onboarding"),
+  rail: document.getElementById("rail"),
+  toolbar: document.getElementById("toolbar"),
+  sidebar: document.getElementById("sidebar"),
+  home: document.getElementById("home"),
+  content: document.getElementById("content"),
+};
 
-mountRail(railEl, {
+mountRail(elements.rail, {
   onCompose: () => {
     if (!state.vaultPath) {
       return;
@@ -42,7 +44,7 @@ mountRail(railEl, {
   },
 });
 
-mountTitlebar(titlebarEl, {
+mountTitlebar(elements.titlebar, {
   onToggleSidebar: () => {
     if (!state.vaultPath || state.mode === "onboarding") {
       return;
@@ -51,15 +53,15 @@ mountTitlebar(titlebarEl, {
   },
 });
 
-mountEditor(contentEl);
-mountHome(homeEl, { onChangeVault: () => pickAndOpenVault() });
-mountSidebar(sidebarEl);
+mountEditor(elements.content);
+mountHome(elements.home, { onChangeVault: () => pickAndOpenVault() });
+mountSidebar(elements.sidebar);
 
-mountToolbar(toolbarEl, {
+mountToolbar(elements.toolbar, {
   onChangeVault: () => pickAndOpenVault(),
 });
 
-mountOnboarding(onboardingEl, {
+mountOnboarding(elements.onboarding, {
   onOpenVault: () => pickAndOpenVault({ intent: "onboarding" }),
 });
 
