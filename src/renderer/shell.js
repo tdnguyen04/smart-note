@@ -37,14 +37,13 @@ export function mountShell() {
   });
 
   subscribe((s) => s.mode, (mode) => {
-    shellEl.hidden = mode === "onboarding";
-    onboardingEl.hidden = mode !== "onboarding";
-    home.hidden = mode !== "home";
-    content.hidden = mode !== "organize" && mode !== "onboarding";
+    shellEl.hidden = mode === null;
+    onboardingEl.hidden = !(mode === "onboarding");
+    home.hidden = !(mode === "home");
+    content.hidden = !(mode === "organize");
 
-    const showFiles = mode === "organize";
-    sidebar.hidden = !showFiles;
-    sidebarEmptyEl.hidden = showFiles;
+    sidebar.hidden = !(mode === "organize");
+    sidebarEmptyEl.hidden = mode === "organize";
   });
 
   subscribe((s) => s.sidebarOpen, (sidebarOpen) => {

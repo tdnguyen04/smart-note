@@ -1,6 +1,6 @@
 const state = {
-  /** @type {"onboarding" | "home" | "organize"} */
-  mode: "onboarding",
+  /** @type {"onboarding" | "home" | "organize" | null} */
+  mode: null,
   /** @type {string | null} */
   vaultPath: null,
   /** @type {boolean} */
