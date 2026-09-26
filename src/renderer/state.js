@@ -1,4 +1,4 @@
-export const state = {
+const state = {
   /** @type {"onboarding" | "home" | "organize"} */
   mode: "onboarding",
   /** @type {string | null} */
@@ -9,20 +9,20 @@ export const state = {
   selectedFilePath: null,
 };
 
-export const constants = {
-  /** Read-only default sidebar open state by mode. */
-  sidebarOpenByMode: {
-    home: false,
-    organize: true,
-  },
-};
-
 /** @type {{ selector: (s: typeof state) => unknown, onChange: Function, value: unknown }[]} */
 const listeners = [];
 
 /**
- * Subscribe to a slice of state. onChange runs when selector result changes (Object.is).
- * Runs once immediately with the current value.
+ * A copy of the shared facts: mode, vaultPath, sidebarOpen, selectedFilePath.
+ * Read this. Change those facts through a command or the vault transaction.
+ */
+export function getState() {
+  return { ...state };
+}
+
+/**
+ * Runs onChange when the selector result changes (Object.is).
+ * Also runs once immediately with the current value.
  * @returns {() => void} unsubscribe
  */
 export function subscribe(selector, onChange) {
@@ -35,7 +35,6 @@ export function subscribe(selector, onChange) {
   listeners.push(entry);
   onChange(value, undefined);
 
-  // Unsubscribe
   return () => {
     const index = listeners.indexOf(entry);
     if (index !== -1) {
@@ -44,6 +43,10 @@ export function subscribe(selector, onChange) {
   };
 }
 
+/**
+ * Merges a partial into shared state and notifies selectors that changed.
+ * Callers: commands.js and transactions/vault.js.
+ */
 export function updateState(partial = {}) {
   Object.assign(state, partial);
 

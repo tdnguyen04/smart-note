@@ -1,7 +1,8 @@
-import { subscribe } from "../../store.js";
+import { subscribe } from "../../state.js";
 
 /**
- * Editor owns #content. mode: 'raw' now; later 'preview' can share this mount API.
+ * Mounts the note editor into root.
+ * The draft string is the note body. Autosave writes that string, not the textarea.
  */
 const AUTOSAVE_MS = 400;
 
@@ -22,8 +23,10 @@ export function mountEditor(root) {
 
   root.append(titlebar, body);
 
-  let currentPath = null;
-  let mode = "raw";
+  /** @type {{ status: "empty" | "raw" | "unsupported" | "error", path: string | null, draft: string, message: string }} */
+  let view = { status: "empty", path: null, draft: "", message: "" };
+  /** Path of the textarea currently in the body. Null when the body is not a raw editor. */
+  let mountedPath = null;
   let lastSavedContent = "";
   let saveTimer = null;
   let saveInFlight = null;
@@ -50,10 +53,6 @@ export function mountEditor(root) {
     }
   }
 
-  function getTextarea() {
-    return body.querySelector(".editor__textarea");
-  }
-
   async function persist(filePath, content) {
     if (!filePath || content === lastSavedContent) {
       return { ok: true, skipped: true };
@@ -72,134 +71,137 @@ export function mountEditor(root) {
       await saveInFlight;
     }
 
-    const textarea = getTextarea();
-    const pathToSave = currentPath;
-    if (!textarea || !pathToSave) {
+    const pathToSave = view.path;
+    if (view.status !== "raw" || !pathToSave) {
       return;
     }
 
-    saveInFlight = persist(pathToSave, textarea.value);
+    saveInFlight = persist(pathToSave, view.draft);
     await saveInFlight;
     saveInFlight = null;
   }
 
   function scheduleSave() {
     clearSaveTimer();
-    const pathToSave = currentPath;
+    const pathToSave = view.path;
+    const content = view.draft;
     saveTimer = setTimeout(() => {
       saveTimer = null;
-      const textarea = getTextarea();
-      if (!textarea || currentPath !== pathToSave) {
+      if (view.status !== "raw" || view.path !== pathToSave) {
         return;
       }
-      saveInFlight = persist(pathToSave, textarea.value).finally(() => {
+      saveInFlight = persist(pathToSave, content).finally(() => {
         saveInFlight = null;
       });
     }, AUTOSAVE_MS);
   }
 
-  function showEmpty() {
-    currentPath = null;
-    lastSavedContent = "";
-    clearSaveTimer();
-    setTitle(null);
-    body.replaceChildren();
-    const hint = document.createElement("p");
-    hint.className = "editor__hint";
-    hint.textContent = "Select a file to view its contents.";
-    body.append(hint);
-  }
+  function render() {
+    const showPath = view.status === "empty" ? null : view.path;
+    setTitle(showPath);
 
-  function showUnsupported(filePath) {
-    currentPath = filePath;
-    lastSavedContent = "";
-    clearSaveTimer();
-    setTitle(filePath);
-    body.replaceChildren();
-    const message = document.createElement("p");
-    message.className = "editor__message";
-    message.textContent =
-      "This file type can’t be edited in SmartNote yet.";
-    body.append(message);
-  }
+    if (view.status !== "raw") {
+      mountedPath = null;
+      clearSaveTimer();
+      body.replaceChildren();
+      const message = document.createElement("p");
+      if (view.status === "empty") {
+        message.className = "editor__hint";
+        message.textContent = "Select a file to view its contents.";
+      } else if (view.status === "unsupported") {
+        message.className = "editor__message";
+        message.textContent = "This file type can’t be edited in SmartNote yet.";
+      } else {
+        message.className = "editor__message";
+        message.textContent = view.message;
+      }
+      body.append(message);
+      return;
+    }
 
-  function showError(text) {
-    lastSavedContent = "";
+    if (mountedPath === view.path) {
+      const textarea = body.querySelector(".editor__textarea");
+      if (textarea && textarea.value !== view.draft) {
+        textarea.value = view.draft;
+      }
+      return;
+    }
+
     clearSaveTimer();
     body.replaceChildren();
-    const message = document.createElement("p");
-    message.className = "editor__message";
-    message.textContent = text;
-    body.append(message);
-  }
-
-  function showRaw(filePath, content) {
-    currentPath = filePath;
-    lastSavedContent = content;
-    clearSaveTimer();
-    setTitle(filePath);
-    body.replaceChildren();
-
     const textarea = document.createElement("textarea");
     textarea.className = "editor__textarea";
     textarea.spellcheck = false;
-    textarea.value = content;
-    textarea.dataset.mode = mode;
+    textarea.value = view.draft;
     textarea.addEventListener("input", () => {
+      view.draft = textarea.value;
       scheduleSave();
     });
     body.append(textarea);
+    mountedPath = view.path;
 
-    // Place caret at start so it's obvious the file is editable.
     textarea.focus();
     textarea.setSelectionRange(0, 0);
   }
 
-  showEmpty();
+  function showError(text) {
+    view = {
+      status: "error",
+      path: view.path,
+      draft: "",
+      message: text,
+    };
+    lastSavedContent = "";
+    render();
+  }
 
   async function openFile(filePath) {
     await flushSave();
 
     if (!filePath) {
-      showEmpty();
+      view = { status: "empty", path: null, draft: "", message: "" };
+      lastSavedContent = "";
+      render();
       return;
     }
-
-    setTitle(filePath);
 
     const result = await window.smartnote.readFile(filePath);
     if (!result || !result.ok) {
+      lastSavedContent = "";
       if (result?.reason === "binary") {
-        showUnsupported(filePath);
-        return;
+        view = {
+          status: "unsupported",
+          path: filePath,
+          draft: "",
+          message: "",
+        };
+      } else {
+        view = {
+          status: "error",
+          path: filePath,
+          draft: "",
+          message: result?.message || "Could not open this file.",
+        };
       }
-      currentPath = filePath;
-      showError(result?.message || "Could not open this file.");
+      render();
       return;
     }
 
-    if (mode === "raw") {
-      showRaw(filePath, result.content);
-    }
+    view = {
+      status: "raw",
+      path: filePath,
+      draft: result.content,
+      message: "",
+    };
+    lastSavedContent = result.content;
+    render();
   }
-  async function clear() {
-    await flushSave();
-    showEmpty();
-  }
-  function getCurrentPath() {
-    return currentPath;
-  }
-  function setMode(nextMode) {
-    mode = nextMode === "preview" ? "preview" : "raw";
-  }
+
+  render();
 
   subscribe((s) => s.selectedFilePath, async (selectedFilePath) => {
     try {
-      if (selectedFilePath) {
-        await openFile(selectedFilePath);
-      } else {
-        await clear();
-      }
+      await openFile(selectedFilePath);
     } catch (error) {
       console.error(error);
       showError("An error occurred while opening the file.");

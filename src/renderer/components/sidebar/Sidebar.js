@@ -1,5 +1,10 @@
-import { subscribe, updateState } from "../../store.js";
+import { selectFile } from "../../commands.js";
+import { subscribe } from "../../state.js";
 
+/**
+ * Mounts the file tree into root.
+ * Rows are painted from the in-memory tree and the selected path.
+ */
 export function mountSidebar(root) {
   root.classList.add("sidebar");
   root.replaceChildren();
@@ -12,18 +17,6 @@ export function mountSidebar(root) {
   const expandedPaths = new Set();
   let nodes = [];
   let loadToken = 0;
-
-  function applySelectionHighlight(filePath) {
-    selectedPath = filePath;
-    root.querySelectorAll(".sidebar__item").forEach((el) => {
-      el.classList.toggle("is-selected", Boolean(filePath) && el.dataset.path === filePath);
-    });
-  }
-
-  function selectFile(filePath) {
-    applySelectionHighlight(filePath);
-    updateState({ selectedFilePath: filePath });
-  }
 
   function renderNode(node, depth) {
     const item = document.createElement("li");
@@ -132,6 +125,7 @@ export function mountSidebar(root) {
   });
 
   subscribe((s) => s.selectedFilePath, (filePath) => {
-    applySelectionHighlight(filePath);
+    selectedPath = filePath;
+    paint();
   });
 }

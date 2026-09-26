@@ -1,9 +1,10 @@
-import { subscribe } from "../../store.js";
+import { enterHome, enterOrganize } from "../../commands.js";
+import { subscribe } from "../../state.js";
 
 /**
- * App rail: Compose / Organize on top, Profile at bottom.
+ * Mounts the Compose, Organize, and Profile rail into root.
  */
-export function mountRail(root, { onCompose, onOrganize, onProfile }) {
+export function mountRail(root) {
   root.classList.add("rail");
   root.replaceChildren();
 
@@ -16,32 +17,31 @@ export function mountRail(root, { onCompose, onOrganize, onProfile }) {
   const composeBtn = createRailButton({
     label: "Compose",
     glyph: "✎",
-    onClick: () => onCompose?.(),
+    onClick: () => enterHome(),
   });
 
   const organizeBtn = createRailButton({
     label: "Organize",
     glyph: "▤",
-    onClick: () => onOrganize?.(),
+    onClick: () => enterOrganize(),
   });
 
   const profileBtn = createRailButton({
     label: "Profile",
     glyph: "○",
-    onClick: () => onProfile?.(),
+    onClick: () => {
+      // Profile is not built yet.
+    },
   });
 
   top.append(composeBtn, organizeBtn);
   bottom.append(profileBtn);
   root.append(top, bottom);
 
-  subscribe(
-    (s) => s.mode,
-    (mode) => {
-      composeBtn.classList.toggle("is-active", mode === "home");
-      organizeBtn.classList.toggle("is-active", mode === "organize");
-    }
-  );
+  subscribe((s) => s.mode, (mode) => {
+    composeBtn.classList.toggle("is-active", mode === "home");
+    organizeBtn.classList.toggle("is-active", mode === "organize");
+  });
 }
 
 function createRailButton({ label, glyph, onClick, className = "rail__btn" }) {

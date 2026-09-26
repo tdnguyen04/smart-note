@@ -1,6 +1,10 @@
-import { subscribe } from "../../store.js";
+import { toggleSidebar } from "../../commands.js";
+import { subscribe } from "../../state.js";
 
-export function mountTitlebar(root, { onToggleSidebar }) {
+/**
+ * Mounts the window title bar into root. The sidebar button calls toggleSidebar.
+ */
+export function mountTitlebar(root) {
   root.classList.add("titlebar");
   root.replaceChildren();
 
@@ -20,7 +24,7 @@ export function mountTitlebar(root, { onToggleSidebar }) {
   toggleBtn.setAttribute("aria-label", "Toggle file sidebar");
   toggleBtn.textContent = "☰";
   toggleBtn.addEventListener("click", () => {
-    onToggleSidebar?.();
+    toggleSidebar();
     toggleBtn.blur();
   });
 

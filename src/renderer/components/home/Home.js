@@ -1,10 +1,12 @@
-import { subscribe } from "../../store.js";
-import { vaultNameFromPath } from "../../utils.js";
+import { subscribe } from "../../state.js";
+import { promptNewSession } from "../../transactions/vaultSession.js";
+import { getFolderNameFromPath } from "../../../utils/paths.js";
 
 /**
- * Home capture UI. Submit is visual-only this phase.
+ * Mounts the Home capture panel into root.
+ * Submit does not write a note yet. The vault name calls pickVault.
  */
-export function mountHome(root, { onChangeVault } = {}) {
+export function mountHome(root) {
   root.classList.add("home");
   root.replaceChildren();
 
@@ -31,8 +33,8 @@ export function mountHome(root, { onChangeVault } = {}) {
     </svg>
   `.trim();
 
-  const vaultLabel = document.createElement("span");
-  vaultLabel.className = "home__vault-label";
+  const vaultCaption = document.createElement("span");
+  vaultCaption.className = "home__vault-label";
 
   const vaultName = document.createElement("button");
   vaultName.type = "button";
@@ -40,11 +42,11 @@ export function mountHome(root, { onChangeVault } = {}) {
   vaultName.title = "Change vault";
   vaultName.setAttribute("aria-label", "Change vault");
   vaultName.addEventListener("click", () => {
-    onChangeVault?.();
+    void promptNewSession();
   });
 
-  vaultLabel.append(document.createTextNode("Saving to "), vaultName);
-  vaultLine.append(vaultIcon, vaultLabel);
+  vaultCaption.append(document.createTextNode("Saving to "), vaultName);
+  vaultLine.append(vaultIcon, vaultCaption);
   header.append(headline, vaultLine);
 
   const capture = document.createElement("div");
@@ -101,12 +103,9 @@ export function mountHome(root, { onChangeVault } = {}) {
       input.focus({ preventScroll: true });
     });
   }
-  function clear() {
-    input.value = "";
-  }
 
   subscribe((s) => s.vaultPath, (vaultPath) => {
-    setVaultName(vaultPath ? vaultNameFromPath(vaultPath) : "");
+    setVaultName(getFolderNameFromPath(vaultPath));
   });
 
   subscribe((s) => s.mode, (mode, prevMode) => {

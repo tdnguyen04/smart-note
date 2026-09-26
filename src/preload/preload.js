@@ -1,6 +1,11 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("smartnote", {
+  /**
+   * Opens the vault dialog.
+   * @param {object} options - The options for the vault dialog in 
+   * @returns {Promise<string>} - The path to the selected vault (in raw Electron format)
+   */
   openVaultDialog: (options) => ipcRenderer.invoke("vault:open-dialog", options),
   getTree: (rootPath) => ipcRenderer.invoke("vault:get-tree", rootPath),
   readFile: (filePath) => ipcRenderer.invoke("vault:read-file", filePath),

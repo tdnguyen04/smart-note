@@ -1,7 +1,12 @@
-import { subscribe } from "../../store.js";
-import { vaultNameFromPath } from "../../utils.js";
+import { subscribe } from "../../state.js";
+import { promptNewSession } from "../../transactions/vaultSession.js";
+import { getFolderNameFromPath } from "../../../utils/paths.js";
 
-export function mountToolbar(root, { onChangeVault }) {
+/**
+ * Mounts the vault name and settings menu into root.
+ * Change vault calls pickVault. The menu open flag lives here, not on the DOM.
+ */
+export function mountToolbar(root) {
   root.classList.add("toolbar");
   root.replaceChildren();
 
@@ -35,8 +40,9 @@ export function mountToolbar(root, { onChangeVault }) {
   changeItem.setAttribute("role", "menuitem");
   changeItem.textContent = "Change vault";
   changeItem.addEventListener("click", () => {
-    closeMenu();
-    onChangeVault?.();
+    menuOpen = false;
+    renderMenu();
+    void promptNewSession();
   });
 
   menu.append(changeItem);
@@ -44,28 +50,23 @@ export function mountToolbar(root, { onChangeVault }) {
   actions.append(menuWrap);
   root.append(nameEl, actions);
 
-  function closeMenu() {
-    menu.hidden = true;
-    gearBtn.setAttribute("aria-expanded", "false");
-  }
+  let menuOpen = false;
 
-  function openMenu() {
-    menu.hidden = false;
-    gearBtn.setAttribute("aria-expanded", "true");
+  function renderMenu() {
+    menu.hidden = !menuOpen;
+    gearBtn.setAttribute("aria-expanded", menuOpen ? "true" : "false");
   }
 
   gearBtn.addEventListener("click", (event) => {
     event.stopPropagation();
-    if (menu.hidden) {
-      openMenu();
-    } else {
-      closeMenu();
-    }
+    menuOpen = !menuOpen;
+    renderMenu();
   });
 
   document.addEventListener("click", (event) => {
     if (!menuWrap.contains(event.target)) {
-      closeMenu();
+      menuOpen = false;
+      renderMenu();
     }
   });
 
@@ -75,6 +76,6 @@ export function mountToolbar(root, { onChangeVault }) {
   }
 
   subscribe((s) => s.vaultPath, (vaultPath) => {
-    setVaultName(vaultPath ? vaultNameFromPath(vaultPath) : "");
+    setVaultName(getFolderNameFromPath(vaultPath));
   });
 }

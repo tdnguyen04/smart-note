@@ -1,14 +1,13 @@
-import { subscribe } from "../../store.js";
+import { subscribe } from "../../state.js";
+import { promptNewSession } from "../../transactions/vaultSession.js";
 
 const TIP_TEXT =
   "An empty folder works best — your notes stay in one place.";
 
 /**
- * [View] First-run onboarding (choose a vault).
- * Owns: open-vault panel DOM.
- * Does not: vault dialog (onOpenVault callback).
+ * Mounts the first-run panel into root. Open Vault calls pickVault.
  */
-export function mountOnboarding(root, { onOpenVault }) {
+export function mountOnboarding(root) {
   root.classList.add("onboarding");
   root.innerHTML = `
     <div class="onboarding__panel">
@@ -40,7 +39,7 @@ export function mountOnboarding(root, { onOpenVault }) {
   let hintTimer = null;
 
   button.addEventListener("click", () => {
-    onOpenVault();
+    void promptNewSession({ intent: "onboarding" });
   });
 
   function clearHint() {
@@ -77,13 +76,4 @@ export function mountOnboarding(root, { onOpenVault }) {
     clearHint();
     infoBtn.classList.remove("is-attention");
   });
-
-  return {
-    show() {
-      root.hidden = false;
-    },
-    hide() {
-      root.hidden = true;
-    },
-  };
 }

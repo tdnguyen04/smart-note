@@ -21,10 +21,6 @@ body {
   min-width: 0;
 }
 
-#app:not(.has-vault) #toolbar {
-  display: none;
-}
-
 #app:not(.has-vault) #onboarding {
   flex: 1;
 }
