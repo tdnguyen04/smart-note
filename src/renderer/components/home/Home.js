@@ -2,6 +2,7 @@ import { openCapturedNote, refreshTree } from "../../commands.js";
 import { getState, subscribe } from "../../state.js";
 import { promptNewSession } from "../../transactions/vaultSession.js";
 import { getFolderNameFromPath } from "../../../utils/paths.js";
+import { armSavedSound } from "../../utils/savedSound.js";
 
 const SUCCESS_FLASH_MS = 1200;
 const NUDGE_MS = 5000;
@@ -182,6 +183,7 @@ export function mountHome(root) {
       return;
     }
 
+    const playSavedSound = armSavedSound();
     saving = true;
     error = "";
     clearNudgeTimer();
@@ -198,6 +200,7 @@ export function mountHome(root) {
       savedPath = result.path;
       refreshTree();
       playSuccessFlash();
+      playSavedSound();
       showNudge();
       focus();
     } catch (caught) {
