@@ -57,6 +57,19 @@ export async function promptNewSession(options = {}) {
 }
 
 /**
+ * Forgets the saved vault and shows onboarding.
+ * Notes already written stay in the folder.
+ * @returns {Promise<void>}
+ */
+export async function resetSavedVault() {
+  await window.smartnote.setSettings({
+    mainVaultPath: null,
+    acceptedNonNoteVaultPath: null,
+  });
+  enterOnboarding();
+}
+
+/**
  * Restores the saved vault, or shows onboarding when there is nothing to open.
  * @returns {Promise<void>}
  */

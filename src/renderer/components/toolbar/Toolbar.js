@@ -1,10 +1,10 @@
 import { subscribe } from "../../state.js";
-import { promptNewSession } from "../../transactions/vaultSession.js";
+import { promptNewSession, resetSavedVault } from "../../transactions/vaultSession.js";
 import { getFolderNameFromPath } from "../../../utils/paths.js";
 
 /**
  * Mounts the vault name and settings menu into root.
- * Change vault calls pickVault. The menu open flag lives here, not on the DOM.
+ * Change vault calls promptNewSession. Reset saved vault returns to onboarding.
  */
 export function mountToolbar(root) {
   root.classList.add("toolbar");
@@ -45,7 +45,18 @@ export function mountToolbar(root) {
     void promptNewSession();
   });
 
-  menu.append(changeItem);
+  const resetItem = document.createElement("button");
+  resetItem.type = "button";
+  resetItem.className = "toolbar__dropdown-item";
+  resetItem.setAttribute("role", "menuitem");
+  resetItem.textContent = "Reset saved vault";
+  resetItem.addEventListener("click", () => {
+    menuOpen = false;
+    renderMenu();
+    void resetSavedVault();
+  });
+
+  menu.append(changeItem, resetItem);
   menuWrap.append(gearBtn, menu);
   actions.append(menuWrap);
   root.append(nameEl, actions);

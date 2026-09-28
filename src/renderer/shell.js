@@ -37,7 +37,7 @@ export function mountShell() {
   });
 
   subscribe((s) => s.mode, (mode) => {
-    shellEl.hidden = mode === null;
+    shellEl.hidden = mode === null || mode === "onboarding";
     onboardingEl.hidden = !(mode === "onboarding");
     home.hidden = !(mode === "home");
     content.hidden = !(mode === "organize");
