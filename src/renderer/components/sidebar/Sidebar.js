@@ -1,5 +1,5 @@
 import { selectFile } from "../../commands.js";
-import { subscribe } from "../../state.js";
+import { getState, subscribe } from "../../state.js";
 
 /**
  * Mounts the file tree into root.
@@ -100,7 +100,7 @@ export function mountSidebar(root) {
     paint();
   }
 
-  subscribe((s) => s.vaultPath, async (vaultPath) => {
+  async function loadTree(vaultPath, { resetExpansion }) {
     const token = ++loadToken;
     if (!vaultPath) {
       clearTree();
@@ -113,7 +113,9 @@ export function mountSidebar(root) {
         return;
       }
       nodes = Array.isArray(tree) ? tree : [];
-      expandedPaths.clear();
+      if (resetExpansion) {
+        expandedPaths.clear();
+      }
       paint();
     } catch (error) {
       if (token !== loadToken) {
@@ -122,6 +124,18 @@ export function mountSidebar(root) {
       console.error(error);
       clearTree();
     }
+  }
+
+  subscribe((s) => s.vaultPath, (vaultPath) => {
+    void loadTree(vaultPath, { resetExpansion: true });
+  });
+
+  subscribe((s) => s.treeEpoch, () => {
+    const vaultPath = getState().vaultPath;
+    if (!vaultPath) {
+      return;
+    }
+    void loadTree(vaultPath, { resetExpansion: false });
   });
 
   subscribe((s) => s.selectedFilePath, (filePath) => {

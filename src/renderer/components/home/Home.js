@@ -1,10 +1,14 @@
-import { subscribe } from "../../state.js";
+import { openCapturedNote, refreshTree } from "../../commands.js";
+import { getState, subscribe } from "../../state.js";
 import { promptNewSession } from "../../transactions/vaultSession.js";
 import { getFolderNameFromPath } from "../../../utils/paths.js";
 
+const SUCCESS_FLASH_MS = 1200;
+const NUDGE_MS = 5000;
+
 /**
  * Mounts the Home capture panel into root.
- * Submit does not write a note yet. The vault name calls pickVault.
+ * Submit writes the draft as a note. The vault name calls promptNewSession.
  */
 export function mountHome(root) {
   root.classList.add("home");
@@ -67,22 +71,169 @@ export function mountHome(root) {
   submit.type = "button";
   submit.className = "home__submit";
   submit.textContent = "Submit";
+
+  const status = document.createElement("p");
+  status.className = "home__status";
+  status.hidden = true;
+
+  const nudge = document.createElement("div");
+  nudge.className = "home__nudge";
+  nudge.hidden = true;
+  nudge.setAttribute("role", "status");
+
+  const nudgeText = document.createElement("span");
+  nudgeText.className = "home__nudge-text";
+  nudgeText.textContent = "Note saved.";
+
+  const openBtn = document.createElement("button");
+  openBtn.type = "button";
+  openBtn.className = "home__nudge-action";
+  openBtn.textContent = "Open in Organize";
+  openBtn.addEventListener("click", () => {
+    const path = savedPath;
+    hideNudge();
+    if (path) {
+      openCapturedNote(path);
+    }
+  });
+
+  const dismissBtn = document.createElement("button");
+  dismissBtn.type = "button";
+  dismissBtn.className = "home__nudge-dismiss";
+  dismissBtn.setAttribute("aria-label", "Dismiss");
+  dismissBtn.textContent = "×";
+  dismissBtn.addEventListener("click", () => {
+    hideNudge();
+  });
+
+  nudge.append(nudgeText, openBtn, dismissBtn);
+
+  let draft = "";
+  let saving = false;
+  let error = "";
+  let savedPath = null;
+  let successFlash = false;
+  let flashTimer = null;
+  let nudgeTimer = null;
+
+  function render() {
+    if (input.value !== draft) {
+      input.value = draft;
+    }
+    input.disabled = saving;
+    submit.disabled = saving || !draft.trim();
+    submit.classList.toggle("is-success", successFlash);
+
+    status.hidden = !error;
+    status.textContent = error;
+
+    nudge.hidden = !savedPath;
+  }
+
+  function clearNudgeTimer() {
+    if (nudgeTimer !== null) {
+      window.clearTimeout(nudgeTimer);
+      nudgeTimer = null;
+    }
+  }
+
+  function hideNudge() {
+    clearNudgeTimer();
+    savedPath = null;
+    render();
+  }
+
+  function showNudge() {
+    clearNudgeTimer();
+    render();
+    nudgeTimer = window.setTimeout(() => {
+      nudgeTimer = null;
+      savedPath = null;
+      render();
+    }, NUDGE_MS);
+  }
+
+  function clearSuccessFlash() {
+    if (flashTimer !== null) {
+      window.clearTimeout(flashTimer);
+      flashTimer = null;
+    }
+    successFlash = false;
+  }
+
+  function playSuccessFlash() {
+    clearSuccessFlash();
+    successFlash = true;
+    render();
+    flashTimer = window.setTimeout(() => {
+      flashTimer = null;
+      successFlash = false;
+      render();
+    }, SUCCESS_FLASH_MS);
+  }
+
+  async function submitNote() {
+    const text = draft;
+    if (!text.trim() || saving) {
+      return;
+    }
+    const vaultPath = getState().vaultPath;
+    if (!vaultPath) {
+      return;
+    }
+
+    saving = true;
+    error = "";
+    clearNudgeTimer();
+    savedPath = null;
+    render();
+
+    try {
+      const result = await window.smartnote.createNote(vaultPath, text);
+      if (!result?.ok) {
+        error = result?.message || "Could not save this note.";
+        return;
+      }
+      draft = "";
+      savedPath = result.path;
+      refreshTree();
+      playSuccessFlash();
+      showNudge();
+      focus();
+    } catch (caught) {
+      console.error(caught);
+      error = "Could not save this note.";
+    } finally {
+      saving = false;
+      render();
+    }
+  }
+
   submit.addEventListener("click", (event) => {
     event.preventDefault();
-    // Inert in Phase 2 — writing notes from Home comes later.
+    void submitNote();
+  });
+
+  input.addEventListener("input", () => {
+    draft = input.value;
+    if (error) {
+      error = "";
+    }
+    render();
   });
 
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       event.preventDefault();
-      submit.click();
+      void submitNote();
     }
   });
 
   actions.append(submit);
-  capture.append(input, actions);
+  capture.append(input, actions, status);
+  render();
   panel.append(header, capture);
-  root.append(panel);
+  root.append(panel, nudge);
 
   function setVaultName(name) {
     const label = (name || "").trim();

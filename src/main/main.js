@@ -12,4 +12,4 @@ app.whenReady().then(() => {
   devSetup.setupDevToolsShortcut(app, win);
 });
 
-PlatformBehaviors.handleOSBackgroundQuirks(MainWindow.create());
+PlatformBehaviors.handleOSBackgroundQuirks(MainWindow.create);

@@ -7,13 +7,15 @@ const state = {
   sidebarOpen: false,
   /** @type {string | null} */
   selectedFilePath: null,
+  /** Bumps when a note is created so the file tree reloads. */
+  treeEpoch: 0,
 };
 
 /** @type {{ selector: (s: typeof state) => unknown, onChange: Function, value: unknown }[]} */
 const listeners = [];
 
 /**
- * A copy of the shared facts: mode, vaultPath, sidebarOpen, selectedFilePath.
+ * A copy of the shared facts: mode, vaultPath, sidebarOpen, selectedFilePath, treeEpoch.
  * Read this. Change those facts through a command or the vault transaction.
  */
 export function getState() {

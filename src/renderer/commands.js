@@ -60,3 +60,31 @@ export function toggleSidebar() {
 export function selectFile(path) {
   updateState({ selectedFilePath: path });
 }
+
+/**
+ * Reloads the file tree for the open vault.
+ * Does nothing when no vault is open.
+ */
+export function refreshTree() {
+  const current = getState();
+  if (!current.vaultPath) {
+    return;
+  }
+  updateState({ treeEpoch: current.treeEpoch + 1 });
+}
+
+/**
+ * Opens Organize with the sidebar open and path selected.
+ * Does nothing when no vault is open or path is missing.
+ * @param {string | null | undefined} path
+ */
+export function openCapturedNote(path) {
+  if (!getState().vaultPath || !path) {
+    return;
+  }
+  updateState({
+    mode: "organize",
+    sidebarOpen: true,
+    selectedFilePath: path,
+  });
+}

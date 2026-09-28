@@ -364,19 +364,19 @@ function formatCaptureFilenameByDate(date) {
 
 async function createNote(filePath, content) {
   const noteTitle = formatCaptureFilenameByDate(new Date());
-  let targetPath = path.join(filePath, noteTitle + ".md");
-  // Handle the case where the same name already exists
-  let id = 0;
+  // First file has no suffix. The next collision is (2), then (3), and so on.
+  let attempt = 0;
 
-  // We should not create more than 100 notes with the same name
-  while (id < 100) {
+  while (attempt < 100) {
+    const fileName =
+      attempt === 0 ? `${noteTitle}.md` : `${noteTitle} (${attempt + 1}).md`;
+    const targetPath = path.join(filePath, fileName);
     try {
       await fs.writeFile(targetPath, content, { flag: "wx" });
       return { ok: true, path: targetPath };
     } catch (error) {
       if (error && error.code === "EEXIST") {
-        id += 1;
-        targetPath = path.join(filePath, `${noteTitle} (${id}).md`);
+        attempt += 1;
         continue;
       }
       return {
