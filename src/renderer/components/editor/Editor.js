@@ -96,6 +96,33 @@ export function mountEditor(root) {
     }, AUTOSAVE_MS);
   }
 
+  function lineCount(text) {
+    let count = 1;
+    for (let i = 0; i < text.length; i += 1) {
+      if (text.charCodeAt(i) === 10) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  function paintLineNumbers(gutter, text) {
+    const count = lineCount(text);
+    const digits = String(count).length;
+    gutter.style.setProperty("--editor-gutter-digits", String(digits));
+    if (gutter.childElementCount === count) {
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    for (let n = 1; n <= count; n += 1) {
+      const line = document.createElement("span");
+      line.className = "editor__line-number";
+      line.textContent = String(n);
+      fragment.append(line);
+    }
+    gutter.replaceChildren(fragment);
+  }
+
   function render() {
     const showPath = view.status === "empty" ? null : view.path;
     setTitle(showPath);
@@ -121,23 +148,42 @@ export function mountEditor(root) {
 
     if (mountedPath === view.path) {
       const textarea = body.querySelector(".editor__textarea");
+      const gutter = body.querySelector(".editor__gutter");
       if (textarea && textarea.value !== view.draft) {
         textarea.value = view.draft;
+      }
+      if (gutter) {
+        paintLineNumbers(gutter, view.draft);
       }
       return;
     }
 
     clearSaveTimer();
     body.replaceChildren();
+
+    const pane = document.createElement("div");
+    pane.className = "editor__pane";
+
+    const gutter = document.createElement("div");
+    gutter.className = "editor__gutter";
+    gutter.setAttribute("aria-hidden", "true");
+
     const textarea = document.createElement("textarea");
     textarea.className = "editor__textarea";
     textarea.spellcheck = false;
     textarea.value = view.draft;
     textarea.addEventListener("input", () => {
       view.draft = textarea.value;
+      paintLineNumbers(gutter, view.draft);
       scheduleSave();
     });
-    body.append(textarea);
+    textarea.addEventListener("scroll", () => {
+      gutter.scrollTop = textarea.scrollTop;
+    });
+
+    paintLineNumbers(gutter, view.draft);
+    pane.append(gutter, textarea);
+    body.append(pane);
     mountedPath = view.path;
 
     textarea.focus();
