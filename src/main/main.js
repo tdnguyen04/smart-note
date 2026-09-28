@@ -1,8 +1,9 @@
-const { app, BrowserWindow } = require("electron");
+const { app } = require("electron");
 const { registerIpcHandlers } = require("./ipc");
 const devSetup = require("./devSetup");
 const MainWindow = require("./MainWindow");
 
+const PlatformBehaviors = require("./PlatformBehaviors");
 
 app.whenReady().then(() => {
   devSetup.setupHotReload(app);
@@ -11,14 +12,4 @@ app.whenReady().then(() => {
   devSetup.setupDevToolsShortcut(app, win);
 });
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
-
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    MainWindow.create();
-  }
-});
+PlatformBehaviors.handleOSBackgroundQuirks(MainWindow.create());
