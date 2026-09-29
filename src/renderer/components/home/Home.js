@@ -2,10 +2,12 @@ import { openCapturedNote, refreshTree } from "../../commands.js";
 import { getState, subscribe } from "../../state.js";
 import { promptNewSession } from "../../transactions/vaultSession.js";
 import { getFolderNameFromPath } from "../../../utils/paths.js";
+import { pickPrompt } from "../../utils/capturePrompts.js";
 import { armSavedSound } from "../../utils/savedSound.js";
 
 const SUCCESS_FLASH_MS = 1200;
 const NUDGE_MS = 5000;
+const PROMPT_ROTATE_MS = 5000;
 
 /**
  * Mounts the Home capture panel into root.
@@ -23,7 +25,7 @@ export function mountHome(root) {
 
   const headline = document.createElement("h1");
   headline.className = "home__headline";
-  headline.textContent = "What's on your mind?";
+  headline.textContent = "Jot it down";
 
   const vaultLine = document.createElement("p");
   vaultLine.className = "home__vault";
@@ -57,13 +59,36 @@ export function mountHome(root) {
   const capture = document.createElement("div");
   capture.className = "home__capture";
 
+  let placeholder = pickPrompt();
+
   const input = document.createElement("textarea");
   input.className = "home__input";
-  input.placeholder = "Capture a note…";
+  input.placeholder = placeholder;
   input.setAttribute("aria-label", "Capture a note");
   input.rows = 4;
   input.wrap = "soft";
   input.spellcheck = true;
+
+  function rotatePrompt() {
+    placeholder = pickPrompt(placeholder);
+    input.placeholder = placeholder;
+  }
+
+  let promptTimer = null;
+
+  function stopPromptRotation() {
+    if (promptTimer !== null) {
+      window.clearInterval(promptTimer);
+      promptTimer = null;
+    }
+  }
+
+  function startPromptRotation() {
+    stopPromptRotation();
+    promptTimer = window.setInterval(() => {
+      rotatePrompt();
+    }, PROMPT_ROTATE_MS);
+  }
 
   const actions = document.createElement("div");
   actions.className = "home__actions";
@@ -198,6 +223,7 @@ export function mountHome(root) {
       }
       draft = "";
       savedPath = result.path;
+      rotatePrompt();
       refreshTree();
       playSuccessFlash();
       playSavedSound();
@@ -263,8 +289,14 @@ export function mountHome(root) {
   });
 
   subscribe((s) => s.mode, (mode, prevMode) => {
-    if (mode === "home" && prevMode !== "home") {
-      focus();
+    if (mode === "home") {
+      if (prevMode !== "home") {
+        rotatePrompt();
+        focus();
+      }
+      startPromptRotation();
+      return;
     }
+    stopPromptRotation();
   });
 }
