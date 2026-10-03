@@ -1,8 +1,10 @@
 import { subscribe } from "../../state.js";
+import { splitNoteContent } from "../../utils/captureFocuses.js";
 
 /**
  * Mounts the note editor into root.
  * The draft string is the note body. Autosave writes that string, not the textarea.
+ * A focus block stays in the file and is not shown.
  */
 const AUTOSAVE_MS = 400;
 
@@ -23,8 +25,8 @@ export function mountEditor(root) {
 
   root.append(titlebar, body);
 
-  /** @type {{ status: "empty" | "raw" | "unsupported" | "error", path: string | null, draft: string, message: string }} */
-  let view = { status: "empty", path: null, draft: "", message: "" };
+  /** @type {{ status: "empty" | "raw" | "unsupported" | "error", path: string | null, draft: string, metaPrefix: string, message: string }} */
+  let view = { status: "empty", path: null, draft: "", metaPrefix: "", message: "" };
   /** Path of the textarea currently in the body. Null when the body is not a raw editor. */
   let mountedPath = null;
   let lastSavedContent = "";
@@ -53,7 +55,12 @@ export function mountEditor(root) {
     }
   }
 
-  async function persist(filePath, content) {
+  function fileContent(body) {
+    return `${view.metaPrefix || ""}${body}`;
+  }
+
+  async function persist(filePath, body) {
+    const content = fileContent(body);
     if (!filePath || content === lastSavedContent) {
       return { ok: true, skipped: true };
     }
@@ -195,6 +202,7 @@ export function mountEditor(root) {
       status: "error",
       path: view.path,
       draft: "",
+      metaPrefix: "",
       message: text,
     };
     lastSavedContent = "";
@@ -205,7 +213,7 @@ export function mountEditor(root) {
     await flushSave();
 
     if (!filePath) {
-      view = { status: "empty", path: null, draft: "", message: "" };
+      view = { status: "empty", path: null, draft: "", metaPrefix: "", message: "" };
       lastSavedContent = "";
       render();
       return;
@@ -219,6 +227,7 @@ export function mountEditor(root) {
           status: "unsupported",
           path: filePath,
           draft: "",
+          metaPrefix: "",
           message: "",
         };
       } else {
@@ -226,6 +235,7 @@ export function mountEditor(root) {
           status: "error",
           path: filePath,
           draft: "",
+          metaPrefix: "",
           message: result?.message || "Could not open this file.",
         };
       }
@@ -233,10 +243,12 @@ export function mountEditor(root) {
       return;
     }
 
+    const note = splitNoteContent(result.content);
     view = {
       status: "raw",
       path: filePath,
-      draft: result.content,
+      draft: note.body,
+      metaPrefix: note.prefix,
       message: "",
     };
     lastSavedContent = result.content;

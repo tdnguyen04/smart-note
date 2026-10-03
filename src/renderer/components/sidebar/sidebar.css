@@ -50,6 +50,13 @@
   visibility: hidden;
 }
 
+.sidebar__focus {
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+}
+
 .sidebar__label {
   overflow: hidden;
   text-overflow: ellipsis;

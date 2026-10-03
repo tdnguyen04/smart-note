@@ -1,5 +1,6 @@
 import { selectFile } from "../../commands.js";
 import { getState, subscribe } from "../../state.js";
+import { focusById } from "../../utils/captureFocuses.js";
 
 const CAPTURE_NAME =
   /^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2}) Note(?: \((\d+)\))?\.md$/;
@@ -154,6 +155,17 @@ export function mountSidebar(root) {
     const spacer = document.createElement("span");
     spacer.className = "sidebar__twisty sidebar__twisty--spacer";
     row.append(spacer);
+
+    const focus = focusById(node.focus);
+    if (focus) {
+      const mark = document.createElement("span");
+      mark.className = "sidebar__focus";
+      mark.style.background = focus.color;
+      mark.title = focus.label;
+      mark.setAttribute("aria-hidden", "true");
+      row.append(mark);
+      row.title = `${focus.label} · ${node.name}`;
+    }
 
     const label = document.createElement("span");
     label.className = "sidebar__label";

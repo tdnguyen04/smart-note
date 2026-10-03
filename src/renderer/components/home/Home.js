@@ -2,12 +2,18 @@ import { openCapturedNote, refreshTree } from "../../commands.js";
 import { getState, subscribe } from "../../state.js";
 import { promptNewSession } from "../../transactions/vaultSession.js";
 import { getFolderNameFromPath } from "../../../utils/paths.js";
-import { pickPrompt } from "../../utils/capturePrompts.js";
+import {
+  composeNoteContent,
+  defaultFocuses,
+  focusById,
+  listFocuses,
+  pickPrompt,
+} from "../../utils/captureFocuses.js";
 import { armSavedSound } from "../../utils/savedSound.js";
 
 const SUCCESS_FLASH_MS = 1200;
 const NUDGE_MS = 5000;
-const PROMPT_ROTATE_MS = 5000;
+const VISIBLE_TAG_COUNT = 3;
 
 /**
  * Mounts the Home capture panel into root.
@@ -59,36 +65,20 @@ export function mountHome(root) {
   const capture = document.createElement("div");
   capture.className = "home__capture";
 
-  let placeholder = pickPrompt();
+  const tags = document.createElement("div");
+  tags.className = "home__tags";
+
+  const hint = document.createElement("p");
+  hint.className = "home__hint";
+  hint.hidden = true;
 
   const input = document.createElement("textarea");
   input.className = "home__input";
-  input.placeholder = placeholder;
+  input.placeholder = "Capture a note…";
   input.setAttribute("aria-label", "Capture a note");
   input.rows = 4;
   input.wrap = "soft";
   input.spellcheck = true;
-
-  function rotatePrompt() {
-    placeholder = pickPrompt(placeholder);
-    input.placeholder = placeholder;
-  }
-
-  let promptTimer = null;
-
-  function stopPromptRotation() {
-    if (promptTimer !== null) {
-      window.clearInterval(promptTimer);
-      promptTimer = null;
-    }
-  }
-
-  function startPromptRotation() {
-    stopPromptRotation();
-    promptTimer = window.setInterval(() => {
-      rotatePrompt();
-    }, PROMPT_ROTATE_MS);
-  }
 
   const actions = document.createElement("div");
   actions.className = "home__actions";
@@ -141,6 +131,10 @@ export function mountHome(root) {
   let successFlash = false;
   let flashTimer = null;
   let nudgeTimer = null;
+  let selectedFocusId = null;
+  let visibleIds = defaultFocuses().map((focus) => focus.id);
+  let moreOpen = false;
+  let hintText = "";
 
   function render() {
     if (input.value !== draft) {
@@ -153,7 +147,99 @@ export function mountHome(root) {
     status.hidden = !error;
     status.textContent = error;
 
+    hint.hidden = !hintText;
+    hint.textContent = hintText;
+    const selected = focusById(selectedFocusId);
+    hint.style.color = selected && hintText ? selected.color : "";
+
     nudge.hidden = !savedPath;
+    paintTags();
+  }
+
+  function paintTags() {
+    tags.replaceChildren();
+
+    for (const id of visibleIds) {
+      const focus = focusById(id);
+      if (!focus) {
+        continue;
+      }
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "home__tag";
+      button.classList.toggle("is-selected", selectedFocusId === id);
+      button.style.setProperty("--tag-color", focus.color);
+      button.setAttribute("aria-pressed", selectedFocusId === id ? "true" : "false");
+      button.disabled = saving;
+      button.append(tagDot(), tagLabel(focus.label));
+      button.addEventListener("click", () => {
+        selectedFocusId = selectedFocusId === id ? null : id;
+        hintText = "";
+        moreOpen = false;
+        render();
+      });
+      tags.append(button);
+    }
+
+    const rest = listFocuses().filter((focus) => !visibleIds.includes(focus.id));
+    if (rest.length > 0) {
+      const moreWrap = document.createElement("div");
+      moreWrap.className = "home__more";
+
+      const moreBtn = document.createElement("button");
+      moreBtn.type = "button";
+      moreBtn.className = "home__more-button";
+      moreBtn.textContent = "More";
+      moreBtn.disabled = saving;
+      moreBtn.setAttribute("aria-expanded", moreOpen ? "true" : "false");
+      moreBtn.setAttribute("aria-haspopup", "menu");
+      moreBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        moreOpen = !moreOpen;
+        render();
+      });
+      moreWrap.append(moreBtn);
+
+      if (moreOpen) {
+        const menu = document.createElement("div");
+        menu.className = "home__more-menu";
+        menu.setAttribute("role", "menu");
+        for (const focus of rest) {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "home__more-item";
+          item.setAttribute("role", "menuitem");
+          item.style.setProperty("--tag-color", focus.color);
+          item.append(tagDot(), tagLabel(focus.label));
+          item.addEventListener("click", () => {
+            visibleIds = [
+              ...visibleIds.slice(0, VISIBLE_TAG_COUNT - 1),
+              focus.id,
+            ];
+            selectedFocusId = focus.id;
+            hintText = "";
+            moreOpen = false;
+            render();
+          });
+          menu.append(item);
+        }
+        moreWrap.append(menu);
+      }
+
+      tags.append(moreWrap);
+    }
+
+    const hintBtn = document.createElement("button");
+    hintBtn.type = "button";
+    hintBtn.className = "home__hint-button";
+    hintBtn.textContent = "Hint";
+    hintBtn.disabled = saving;
+    hintBtn.addEventListener("click", () => {
+      hintText = pickPrompt(selectedFocusId, hintText);
+      moreOpen = false;
+      render();
+    });
+    tags.append(hintBtn);
   }
 
   function clearNudgeTimer() {
@@ -213,17 +299,21 @@ export function mountHome(root) {
     error = "";
     clearNudgeTimer();
     savedPath = null;
+    moreOpen = false;
     render();
 
     try {
-      const result = await window.smartnote.createNote(vaultPath, text);
+      const result = await window.smartnote.createNote(
+        vaultPath,
+        composeNoteContent({ focusId: selectedFocusId, body: text })
+      );
       if (!result?.ok) {
         error = result?.message || "Could not save this note.";
         return;
       }
       draft = "";
+      hintText = "";
       savedPath = result.path;
-      rotatePrompt();
       refreshTree();
       playSuccessFlash();
       playSavedSound();
@@ -258,8 +348,16 @@ export function mountHome(root) {
     }
   });
 
+  document.addEventListener("pointerdown", (event) => {
+    if (!moreOpen || tags.contains(event.target)) {
+      return;
+    }
+    moreOpen = false;
+    render();
+  });
+
   actions.append(submit);
-  capture.append(input, actions, status);
+  capture.append(tags, hint, input, actions, status);
   render();
   panel.append(header, capture);
   root.append(panel, nudge);
@@ -289,14 +387,21 @@ export function mountHome(root) {
   });
 
   subscribe((s) => s.mode, (mode, prevMode) => {
-    if (mode === "home") {
-      if (prevMode !== "home") {
-        rotatePrompt();
-        focus();
-      }
-      startPromptRotation();
-      return;
+    if (mode === "home" && prevMode !== "home") {
+      focus();
     }
-    stopPromptRotation();
   });
+}
+
+function tagDot() {
+  const dot = document.createElement("span");
+  dot.className = "home__tag-dot";
+  dot.setAttribute("aria-hidden", "true");
+  return dot;
+}
+
+function tagLabel(text) {
+  const label = document.createElement("span");
+  label.textContent = text;
+  return label;
 }

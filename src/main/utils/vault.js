@@ -1,6 +1,7 @@
 const { dialog, BrowserWindow } = require("electron");
 const fs = require("fs/promises");
 const path = require("path");
+const { peekCaptureFocus } = require("./noteFocus");
 
 async function setPointerFrozen(win, frozen) {
   if (!win || win.isDestroyed()) return;
@@ -70,11 +71,16 @@ async function readDirNode(dirPath) {
         children: await readDirNode(entryPath),
       });
     } else if (entry.isFile()) {
-      nodes.push({
+      const fileNode = {
         name: entry.name,
         path: entryPath,
         type: "file",
-      });
+      };
+      const focus = await peekCaptureFocus(entryPath, entry.name);
+      if (focus) {
+        fileNode.focus = focus;
+      }
+      nodes.push(fileNode);
     }
   }
 
