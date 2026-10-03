@@ -108,44 +108,67 @@
   gap: var(--space-2);
 }
 
-.home__tag,
-.home__more-button,
-.home__hint-button {
+.home__tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.22rem 0.65rem;
+  gap: 0.28rem;
+  padding: 0.08rem 0.45rem;
   border: var(--border-width) solid var(--color-border);
   border-radius: 999px;
-  background: var(--color-bg);
-  color: var(--color-fg);
-  font-size: var(--font-size-xs);
-  line-height: 1.4;
+  background: transparent;
+  color: var(--color-fg-muted);
+  font-size: 0.6875rem;
+  line-height: 1.3;
 }
 
 .home__tag:hover,
-.home__more-button:hover,
-.home__hint-button:hover {
+.home__tags.is-hinted .home__tag {
   background: var(--color-bg-hover);
+}
+
+.home__tags.is-hinted .home__tag,
+.home__tags.is-hinted .home__more-button {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-fg) 10%, transparent);
 }
 
 .home__tag.is-selected {
   border-color: var(--tag-color);
   background: color-mix(in srgb, var(--tag-color) 16%, var(--color-bg));
+  color: var(--color-fg);
 }
 
 .home__tag:focus-visible,
 .home__more-button:focus-visible,
 .home__hint-button:focus-visible,
+.home__hint-close:focus-visible,
+.home__hint-shuffle:focus-visible,
 .home__more-item:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
+.home__more-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-fg-muted);
+}
+
+.home__more-button:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-fg);
+}
+
 .home__tag-dot {
   flex: 0 0 auto;
-  width: 0.45rem;
-  height: 0.45rem;
+  width: 0.35rem;
+  height: 0.35rem;
   border-radius: 50%;
   background: var(--tag-color);
 }
@@ -170,13 +193,13 @@
 .home__more-item {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   width: 100%;
-  padding: 0.35rem 0.5rem;
+  padding: 0.28rem 0.45rem;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-fg);
-  font-size: var(--font-size-xs);
+  color: var(--color-fg-muted);
+  font-size: 0.6875rem;
   text-align: left;
 }
 
@@ -184,20 +207,153 @@
   background: var(--color-bg-hover);
 }
 
-.home__hint-button:disabled {
+.home__field {
+  position: relative;
+  border: var(--border-width) solid var(--color-border-strong);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg);
+  transition: border-color 120ms ease;
+}
+
+.home__field:hover {
+  border-color: var(--color-fg-subtle);
+}
+
+.home__field:focus-within {
+  border-color: var(--color-border-strong);
+}
+
+.home__hint-button {
+  position: absolute;
+  z-index: 1;
+  top: 0.45rem;
+  right: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #6a93b0;
+}
+
+.home__hint-button:hover {
+  background: color-mix(in srgb, #6a93b0 12%, transparent);
+}
+
+.home__hint-button[hidden] {
+  display: none;
+}
+
+.home__hint-button:disabled,
+.home__hint-close:disabled,
+.home__hint-shuffle:disabled {
   opacity: 0.45;
   cursor: default;
 }
 
+.home__hint-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin: 0.4rem 0.4rem 0;
+  padding: 0.4rem 0.35rem 0.4rem 0.6rem;
+  border-radius: calc(var(--radius-xl) - 3px);
+  background: var(--color-bg-muted);
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+  animation: home-hint-in 160ms ease;
+}
+
+.home__hint-bar[hidden] {
+  display: none;
+}
+
+.home__hint-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 0.12rem;
+  color: #6a93b0;
+}
+
 .home__hint {
+  flex: 1;
+  min-width: 0;
   margin: 0;
-  font-size: var(--font-size-sm);
-  line-height: var(--line-height-body);
+  padding-top: 0.05rem;
+}
+
+.home__hint-label {
+  color: var(--color-fg);
+  font-weight: 600;
+}
+
+.home__hint-close,
+.home__hint-shuffle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg-muted);
+}
+
+.home__hint-close {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.home__hint-close:hover,
+.home__hint-shuffle:hover {
+  background: color-mix(in srgb, var(--color-fg) 6%, transparent);
   color: var(--color-fg);
 }
 
-.home__hint[hidden] {
-  display: none;
+.home__hint-shuffle-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.home__hint-tip {
+  position: absolute;
+  z-index: 6;
+  right: 0;
+  bottom: calc(100% + 0.4rem);
+  width: 12.5rem;
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  color: var(--color-fg-muted);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 10%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.home__hint-shuffle-wrap:hover .home__hint-tip,
+.home__hint-shuffle-wrap:has(.home__hint-shuffle:focus-visible) .home__hint-tip {
+  opacity: 1;
+}
+
+@keyframes home-hint-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .home__capture {
@@ -213,8 +369,9 @@
   min-height: 8rem;
   max-height: 16rem;
   padding: var(--space-3) var(--space-4);
-  border: var(--border-width) solid var(--color-border-strong);
-  border-radius: var(--radius-xl);
+  border: none;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  background: transparent;
   color: var(--color-fg);
   font: inherit;
   font-size: var(--font-size-md);
@@ -236,9 +393,13 @@
   border-color: var(--color-fg-subtle);
 }
 
+.home__field:not(.has-hint) .home__input {
+  padding-right: 2.5rem;
+}
+
 .home__input:focus {
   border-color: var(--color-border-strong);
-  background: var(--color-bg);
+  background: transparent;
 }
 
 .home__actions {

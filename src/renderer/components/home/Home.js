@@ -68,9 +68,96 @@ export function mountHome(root) {
   const tags = document.createElement("div");
   tags.className = "home__tags";
 
+  const field = document.createElement("div");
+  field.className = "home__field";
+
+  const hintBar = document.createElement("div");
+  hintBar.className = "home__hint-bar";
+  hintBar.hidden = true;
+
+  const hintIcon = document.createElement("span");
+  hintIcon.className = "home__hint-icon";
+  hintIcon.setAttribute("aria-hidden", "true");
+  hintIcon.innerHTML = `
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.3">
+      <path d="M8 1.7a3.9 3.9 0 0 0-2.2 7.1c.35.3.55.7.55 1.15V11h3.3v-1.05c0-.45.2-.85.55-1.15A3.9 3.9 0 0 0 8 1.7z" />
+      <path d="M6.5 12.4h3M6.9 13.8h2.2" stroke-linecap="round" />
+    </svg>
+  `.trim();
+
   const hint = document.createElement("p");
   hint.className = "home__hint";
-  hint.hidden = true;
+
+  const hintLabel = document.createElement("span");
+  hintLabel.className = "home__hint-label";
+  hintLabel.textContent = "Hint: ";
+
+  const hintQuestion = document.createElement("span");
+  hintQuestion.className = "home__hint-question";
+  hint.append(hintLabel, hintQuestion);
+
+  const hintClose = document.createElement("button");
+  hintClose.type = "button";
+  hintClose.className = "home__hint-close";
+  hintClose.setAttribute("aria-label", "Close hint");
+  hintClose.textContent = "×";
+  hintClose.addEventListener("click", () => {
+    hintText = "";
+    render();
+  });
+
+  const shuffleWrap = document.createElement("div");
+  shuffleWrap.className = "home__hint-shuffle-wrap";
+
+  const hintShuffle = document.createElement("button");
+  hintShuffle.type = "button";
+  hintShuffle.className = "home__hint-shuffle";
+  hintShuffle.setAttribute("aria-label", "Another question");
+  hintShuffle.innerHTML = `
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+      <path d="M13.1 6.1A5.1 5.1 0 0 0 3.5 4.7" stroke-linecap="round" />
+      <path d="M3.1 2.9v2.1h2.1" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M2.9 9.9a5.1 5.1 0 0 0 9.6 1.4" stroke-linecap="round" />
+      <path d="M12.9 13.1v-2.1h-2.1" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  `.trim();
+  hintShuffle.addEventListener("click", () => {
+    hintText = pickPrompt(selectedFocusId, hintText);
+    moreOpen = false;
+    render();
+  });
+
+  const hintTip = document.createElement("p");
+  hintTip.className = "home__hint-tip";
+  hintTip.id = "home-hint-tip";
+  hintShuffle.setAttribute("aria-describedby", hintTip.id);
+
+  function showTopicHint(on) {
+    tags.classList.toggle("is-hinted", on);
+  }
+
+  hintShuffle.addEventListener("mouseenter", () => showTopicHint(true));
+  hintShuffle.addEventListener("mouseleave", () => showTopicHint(false));
+  hintShuffle.addEventListener("focus", () => {
+    if (hintShuffle.matches(":focus-visible")) {
+      showTopicHint(true);
+    }
+  });
+  hintShuffle.addEventListener("blur", () => showTopicHint(false));
+
+  shuffleWrap.append(hintShuffle, hintTip);
+  hintBar.append(hintIcon, hint, hintClose, shuffleWrap);
+
+  const hintBtn = document.createElement("button");
+  hintBtn.type = "button";
+  hintBtn.className = "home__hint-button";
+  hintBtn.setAttribute("aria-label", "Show a prompt");
+  hintBtn.innerHTML = hintIcon.innerHTML;
+  hintBtn.addEventListener("click", () => {
+    hintText = pickPrompt(selectedFocusId, hintText);
+    moreOpen = false;
+    render();
+  });
 
   const input = document.createElement("textarea");
   input.className = "home__input";
@@ -147,10 +234,17 @@ export function mountHome(root) {
     status.hidden = !error;
     status.textContent = error;
 
-    hint.hidden = !hintText;
-    hint.textContent = hintText;
-    const selected = focusById(selectedFocusId);
-    hint.style.color = selected && hintText ? selected.color : "";
+    const hintOpen = Boolean(hintText);
+    hintBar.hidden = !hintOpen;
+    hintQuestion.textContent = hintText;
+    hintBtn.hidden = hintOpen;
+    hintBtn.disabled = saving;
+    hintClose.disabled = saving;
+    hintShuffle.disabled = saving;
+    field.classList.toggle("has-hint", hintOpen);
+    hintTip.textContent = selectedFocusId
+      ? "Questions follow the topic you pick."
+      : "Choose a topic for a more relevant question.";
 
     nudge.hidden = !savedPath;
     paintTags();
@@ -174,7 +268,9 @@ export function mountHome(root) {
       button.append(tagDot(), tagLabel(focus.label));
       button.addEventListener("click", () => {
         selectedFocusId = selectedFocusId === id ? null : id;
-        hintText = "";
+        if (hintText) {
+          hintText = pickPrompt(selectedFocusId, hintText);
+        }
         moreOpen = false;
         render();
       });
@@ -189,10 +285,17 @@ export function mountHome(root) {
       const moreBtn = document.createElement("button");
       moreBtn.type = "button";
       moreBtn.className = "home__more-button";
-      moreBtn.textContent = "More";
+      moreBtn.setAttribute("aria-label", "More tags");
       moreBtn.disabled = saving;
       moreBtn.setAttribute("aria-expanded", moreOpen ? "true" : "false");
       moreBtn.setAttribute("aria-haspopup", "menu");
+      moreBtn.innerHTML = `
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <circle cx="3.25" cy="8" r="1.15" fill="currentColor" />
+          <circle cx="8" cy="8" r="1.15" fill="currentColor" />
+          <circle cx="12.75" cy="8" r="1.15" fill="currentColor" />
+        </svg>
+      `.trim();
       moreBtn.addEventListener("click", (event) => {
         event.stopPropagation();
         moreOpen = !moreOpen;
@@ -217,7 +320,9 @@ export function mountHome(root) {
               focus.id,
             ];
             selectedFocusId = focus.id;
-            hintText = "";
+            if (hintText) {
+              hintText = pickPrompt(selectedFocusId, hintText);
+            }
             moreOpen = false;
             render();
           });
@@ -228,18 +333,6 @@ export function mountHome(root) {
 
       tags.append(moreWrap);
     }
-
-    const hintBtn = document.createElement("button");
-    hintBtn.type = "button";
-    hintBtn.className = "home__hint-button";
-    hintBtn.textContent = "Hint";
-    hintBtn.disabled = saving;
-    hintBtn.addEventListener("click", () => {
-      hintText = pickPrompt(selectedFocusId, hintText);
-      moreOpen = false;
-      render();
-    });
-    tags.append(hintBtn);
   }
 
   function clearNudgeTimer() {
@@ -357,7 +450,8 @@ export function mountHome(root) {
   });
 
   actions.append(submit);
-  capture.append(tags, hint, input, actions, status);
+  field.append(hintBar, hintBtn, input);
+  capture.append(tags, field, actions, status);
   render();
   panel.append(header, capture);
   root.append(panel, nudge);
