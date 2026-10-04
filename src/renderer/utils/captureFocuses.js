@@ -1,50 +1,51 @@
 /**
- * Capture focuses. The id is what a note stores. Label, color, and prompts can change.
+ * Academic capture intents. The id is what a new note stores.
+ * An id that is not in this list, including older journaling tags, is ignored.
  */
 const CAPTURE_FOCUSES = [
   {
-    id: "emotions",
-    label: "Emotions",
-    color: "#c45c26",
-    prompts: [
-      "Take a breath. What's the mood right now?",
-      "What's on your mind at this exact moment?",
-    ],
-  },
-  {
-    id: "learning",
-    label: "Learning",
-    color: "#2a6f4e",
-    prompts: [
-      "What is the core takeaway you want to remember?",
-      "How would you explain what you just learned to a beginner?",
-    ],
-  },
-  {
-    id: "distractions",
-    label: "Distractions",
+    id: "literature",
+    label: "Literature Insight",
     color: "#3d6b8c",
     prompts: [
-      "What's nagging at your attention? Dump it here.",
-      "Got a lingering to-do? Jot it down so you can refocus.",
+      "What claim is this source actually making?",
+      "Which passage is worth keeping, and why?",
     ],
   },
   {
-    id: "past-hour",
-    label: "Past hour",
+    id: "research",
+    label: "Research Idea",
+    color: "#2a6f4e",
+    prompts: [
+      "What question is this idea trying to answer?",
+      "What would you need in order to test this?",
+    ],
+  },
+  {
+    id: "lecture",
+    label: "Lecture Note",
     color: "#8a6232",
     prompts: [
-      "Quick recap: where did your focus go over the last hour?",
-      "What did you just wrap up?",
+      "What was the main argument of this lecture?",
+      "What should you be able to explain after this session?",
     ],
   },
   {
-    id: "joy",
-    label: "Joy",
+    id: "question",
+    label: "Open Question",
     color: "#a33d55",
     prompts: [
-      "Capture a good moment—what made you smile today?",
-      "What is going really well right now?",
+      "What is still unresolved?",
+      "What evidence would change your mind?",
+    ],
+  },
+  {
+    id: "synthesis",
+    label: "Synthesis",
+    color: "#4d5d73",
+    prompts: [
+      "How does this connect to something you already know?",
+      "What is the through-line across these sources?",
     ],
   },
 ];

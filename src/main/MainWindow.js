@@ -15,7 +15,7 @@ const MainWindow = {
       minHeight: 480,
       backgroundColor: "#ffffff",
       show: false, // Hidden until ready
-      title: "SmartNote",
+      title: "Folio",
       titleBarStyle: "hidden",
       titleBarOverlay: {
         color: "#ffffff",

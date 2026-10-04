@@ -2,7 +2,7 @@ import { subscribe } from "../../state.js";
 import { promptNewSession } from "../../transactions/vaultSession.js";
 
 const TIP_TEXT =
-  "An empty folder works best — your notes stay in one place.";
+  "An empty folder works best — keep readings and research together.";
 
 /**
  * Mounts the first-run panel into root. Open Vault calls pickVault.
@@ -11,7 +11,7 @@ export function mountOnboarding(root) {
   root.classList.add("onboarding");
   root.innerHTML = `
     <div class="onboarding__panel">
-      <h1 class="onboarding__title">SmartNote</h1>
+      <h1 class="onboarding__title">Folio</h1>
       <p class="onboarding__copy">
         <button
           type="button"
@@ -28,9 +28,9 @@ export function mountOnboarding(root) {
             ${TIP_TEXT}
           </span>
         </button>
-        <span>Open a local folder to use as your vault.</span>
+        <span>Open a folder for readings, lectures, and research.</span>
       </p>
-      <button type="button" class="onboarding__button">Open Vault</button>
+      <button type="button" class="onboarding__button">Choose folder</button>
     </div>
   `;
 

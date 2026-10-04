@@ -31,7 +31,7 @@ export function mountHome(root) {
 
   const headline = document.createElement("h1");
   headline.className = "home__headline";
-  headline.textContent = "Jot it down";
+  headline.textContent = "Record a source";
 
   const vaultLine = document.createElement("p");
   vaultLine.className = "home__vault";
@@ -52,8 +52,8 @@ export function mountHome(root) {
   const vaultName = document.createElement("button");
   vaultName.type = "button";
   vaultName.className = "home__vault-name";
-  vaultName.title = "Change vault";
-  vaultName.setAttribute("aria-label", "Change vault");
+  vaultName.title = "Change folder";
+  vaultName.setAttribute("aria-label", "Change folder");
   vaultName.addEventListener("click", () => {
     void promptNewSession();
   });
@@ -161,8 +161,8 @@ export function mountHome(root) {
 
   const input = document.createElement("textarea");
   input.className = "home__input";
-  input.placeholder = "Capture a note…";
-  input.setAttribute("aria-label", "Capture a note");
+  input.placeholder = "A claim, a passage, or a point from lecture…";
+  input.setAttribute("aria-label", "Record a source");
   input.rows = 4;
   input.wrap = "soft";
   input.spellcheck = true;
@@ -173,7 +173,7 @@ export function mountHome(root) {
   const submit = document.createElement("button");
   submit.type = "button";
   submit.className = "home__submit";
-  submit.textContent = "Submit";
+  submit.textContent = "Save";
 
   const status = document.createElement("p");
   status.className = "home__status";
@@ -186,7 +186,7 @@ export function mountHome(root) {
 
   const nudgeText = document.createElement("span");
   nudgeText.className = "home__nudge-text";
-  nudgeText.textContent = "Note saved.";
+  nudgeText.textContent = "Saved.";
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
@@ -401,7 +401,7 @@ export function mountHome(root) {
         composeNoteContent({ focusId: selectedFocusId, body: text })
       );
       if (!result?.ok) {
-        error = result?.message || "Could not save this note.";
+        error = result?.message || "Could not save this.";
         return;
       }
       draft = "";
@@ -414,7 +414,7 @@ export function mountHome(root) {
       focus();
     } catch (caught) {
       console.error(caught);
-      error = "Could not save this note.";
+      error = "Could not save this.";
     } finally {
       saving = false;
       render();

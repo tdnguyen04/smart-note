@@ -22,14 +22,14 @@ async function openVaultDialog(options = {}) {
     await setPointerFrozen(win, true);
 
     const dialogOptions = {
-      title: forOnboarding ? "Choose a folder for your notes" : "Open Vault",
+      title: forOnboarding ? "Choose a folder for your research" : "Open folder",
       properties: ["openDirectory"],
     };
 
     // `message` is shown on macOS folder dialogs; Windows relies on onboarding copy.
     if (forOnboarding) {
       dialogOptions.message =
-        "An empty folder works best — your notes stay in one place.";
+        "An empty folder works best — keep readings and research together.";
     }
 
     const result = await dialog.showOpenDialog(dialogOptions);
@@ -334,9 +334,9 @@ async function confirmNonNotes({ nonNoteCount = 0, sampleNames = [] } = {}) {
 
   const options = {
     type: "info",
-    title: "SmartNote",
-    message: "This folder has a few files SmartNote won’t open.",
-    detail: `Things like images or PDFs are fine to leave here${sampleHint}. You can still use this folder for notes.`,
+    title: "Folio",
+    message: "This folder has a few files Folio won’t open.",
+    detail: `Things like images or PDFs are fine to leave here${sampleHint}. You can still keep readings and research here.`,
     buttons: ["Use this folder", "Pick another"],
     defaultId: 0,
     cancelId: 1,

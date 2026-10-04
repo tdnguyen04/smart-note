@@ -32,7 +32,7 @@ export function mountTitlebar(root) {
 
   const title = document.createElement("div");
   title.className = "titlebar__title";
-  title.textContent = "SmartNote";
+  title.textContent = "Folio";
 
   const right = document.createElement("div");
   right.className = "titlebar__right";

@@ -38,7 +38,7 @@ export function mountToolbar(root) {
   changeItem.type = "button";
   changeItem.className = "toolbar__dropdown-item";
   changeItem.setAttribute("role", "menuitem");
-  changeItem.textContent = "Change vault";
+  changeItem.textContent = "Change folder";
   changeItem.addEventListener("click", () => {
     menuOpen = false;
     renderMenu();
@@ -49,7 +49,7 @@ export function mountToolbar(root) {
   resetItem.type = "button";
   resetItem.className = "toolbar__dropdown-item";
   resetItem.setAttribute("role", "menuitem");
-  resetItem.textContent = "Reset saved vault";
+  resetItem.textContent = "Reset saved folder";
   resetItem.addEventListener("click", () => {
     menuOpen = false;
     renderMenu();

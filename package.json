@@ -14,7 +14,7 @@
   },
   "build": {
     "appId": "com.tdnguyen.smartnote",
-    "productName": "SmartNote",
+    "productName": "Folio",
     "copyright": "Copyright © 2026",
     "files": [
       "src/**/*",

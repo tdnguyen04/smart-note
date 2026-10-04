@@ -141,10 +141,10 @@ export function mountEditor(root) {
       const message = document.createElement("p");
       if (view.status === "empty") {
         message.className = "editor__hint";
-        message.textContent = "Select a file to view its contents.";
+        message.textContent = "Select a file to read it.";
       } else if (view.status === "unsupported") {
         message.className = "editor__message";
-        message.textContent = "This file type can’t be edited in SmartNote yet.";
+        message.textContent = "Folio can’t edit this file type yet.";
       } else {
         message.className = "editor__message";
         message.textContent = view.message;
