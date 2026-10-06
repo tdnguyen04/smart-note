@@ -152,29 +152,55 @@ export function mountEditor(root) {
     }, AUTOSAVE_MS);
   }
 
-  function lineCount(text) {
-    let count = 1;
-    for (let i = 0; i < text.length; i += 1) {
-      if (text.charCodeAt(i) === 10) {
-        count += 1;
-      }
+  const measure = document.createElement("div");
+  measure.className = "editor__measure";
+  measure.setAttribute("aria-hidden", "true");
+  root.append(measure);
+
+  const resizeObserver = new ResizeObserver(() => {
+    const textarea = body.querySelector(".editor__textarea");
+    const gutter = body.querySelector(".editor__gutter");
+    if (textarea && gutter) {
+      paintLineNumbers(gutter, textarea);
     }
-    return count;
+  });
+
+  function wrappedRows(line, contentWidth) {
+    if (contentWidth <= 0 || line.length === 0) {
+      return 1;
+    }
+    measure.style.width = `${contentWidth}px`;
+    measure.textContent = line;
+    const lineHeight = parseFloat(getComputedStyle(measure).lineHeight);
+    if (!lineHeight) {
+      return 1;
+    }
+    return Math.max(1, Math.round(measure.getBoundingClientRect().height / lineHeight));
   }
 
-  function paintLineNumbers(gutter, text) {
-    const count = lineCount(text);
-    const digits = String(count).length;
+  function paintLineNumbers(gutter, textarea) {
+    const text = textarea.value;
+    const style = getComputedStyle(textarea);
+    const contentWidth =
+      textarea.clientWidth -
+      parseFloat(style.paddingLeft) -
+      parseFloat(style.paddingRight);
+    const lines = text.split("\n");
+    const digits = String(Math.max(lines.length, 1)).length;
     gutter.style.setProperty("--editor-gutter-digits", String(digits));
-    if (gutter.childElementCount === count) {
-      return;
-    }
+
     const fragment = document.createDocumentFragment();
-    for (let n = 1; n <= count; n += 1) {
-      const line = document.createElement("span");
-      line.className = "editor__line-number";
-      line.textContent = String(n);
-      fragment.append(line);
+    for (let index = 0; index < lines.length; index += 1) {
+      const number = document.createElement("span");
+      number.className = "editor__line-number";
+      number.textContent = String(index + 1);
+      fragment.append(number);
+      const extra = wrappedRows(lines[index], contentWidth) - 1;
+      for (let row = 0; row < extra; row += 1) {
+        const blank = document.createElement("span");
+        blank.className = "editor__line-number editor__line-number--wrap";
+        fragment.append(blank);
+      }
     }
     gutter.replaceChildren(fragment);
   }
@@ -184,6 +210,7 @@ export function mountEditor(root) {
 
     if (view.status !== "raw") {
       mountedPath = null;
+      resizeObserver.disconnect();
       clearSaveTimer();
       body.replaceChildren();
       const message = document.createElement("p");
@@ -207,8 +234,8 @@ export function mountEditor(root) {
       if (textarea && textarea.value !== view.draft) {
         textarea.value = view.draft;
       }
-      if (gutter) {
-        paintLineNumbers(gutter, view.draft);
+      if (textarea && gutter) {
+        paintLineNumbers(gutter, textarea);
       }
       return;
     }
@@ -230,16 +257,18 @@ export function mountEditor(root) {
     textarea.addEventListener("input", () => {
       view.draft = textarea.value;
       paintHeading();
-      paintLineNumbers(gutter, view.draft);
+      paintLineNumbers(gutter, textarea);
       scheduleSave();
     });
     textarea.addEventListener("scroll", () => {
       gutter.scrollTop = textarea.scrollTop;
     });
 
-    paintLineNumbers(gutter, view.draft);
     pane.append(gutter, textarea);
     body.append(pane);
+    resizeObserver.disconnect();
+    resizeObserver.observe(textarea);
+    paintLineNumbers(gutter, textarea);
     mountedPath = view.path;
 
     textarea.focus();

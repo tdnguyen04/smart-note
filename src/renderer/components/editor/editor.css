@@ -78,6 +78,23 @@
   height: calc(var(--font-size-sm) * var(--line-height-body));
 }
 
+.editor__line-number--wrap {
+  visibility: hidden;
+}
+
+.editor__measure {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-body);
+}
+
 .editor__textarea {
   flex: 1;
   width: 100%;
@@ -86,12 +103,14 @@
   padding: var(--space-4);
   border: none;
   resize: none;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
   line-height: var(--line-height-body);
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   outline: none;
 }

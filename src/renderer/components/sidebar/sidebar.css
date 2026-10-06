@@ -64,13 +64,30 @@
 }
 
 .sidebar__label--title {
+  flex: 1;
+  min-width: 0;
   color: var(--color-fg);
   font-weight: 500;
+  font-size: var(--font-size-xs);
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  overflow-wrap: break-word;
+}
+
+.sidebar__item--file > .sidebar__row {
+  align-items: flex-start;
+}
+
+.sidebar__item--file > .sidebar__row .sidebar__twisty,
+.sidebar__item--file > .sidebar__row .sidebar__focus {
+  margin-top: 0.15rem;
 }
 
 .sidebar__meta {
   flex: 0 0 auto;
   margin-left: auto;
+  padding-top: 0.12rem;
   color: var(--color-fg-subtle);
   font-size: 0.625rem;
   letter-spacing: 0.01em;
