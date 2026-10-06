@@ -161,7 +161,7 @@ export function mountHome(root) {
 
   const input = document.createElement("textarea");
   input.className = "home__input";
-  input.placeholder = "A claim, a passage, or a point from lecture…";
+  input.placeholder = "A claim, a passage, or a point from your research…";
   input.setAttribute("aria-label", "Record a source");
   input.rows = 4;
   input.wrap = "soft";

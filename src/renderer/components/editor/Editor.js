@@ -1,5 +1,9 @@
 import { subscribe } from "../../state.js";
 import { splitNoteContent } from "../../utils/captureFocuses.js";
+import { entryTitle } from "../../utils/entryTitle.js";
+
+const CAPTURE_NAME =
+  /^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2}) Note(?: \((\d+)\))?\.md$/;
 
 /**
  * Mounts the note editor into root.
@@ -18,7 +22,11 @@ export function mountEditor(root) {
   const title = document.createElement("span");
   title.className = "editor__filename";
   title.textContent = "No file open";
-  titlebar.append(title);
+
+  const meta = document.createElement("span");
+  meta.className = "editor__meta";
+  meta.hidden = true;
+  titlebar.append(title, meta);
 
   const body = document.createElement("div");
   body.className = "editor__body";
@@ -42,10 +50,51 @@ export function mountEditor(root) {
     return parts[parts.length - 1] || filePath;
   }
 
-  function setTitle(filePath) {
-    const name = fileNameFromPath(filePath);
-    title.textContent = name;
-    title.title = filePath || name;
+  function paintHeading() {
+    meta.hidden = true;
+    meta.textContent = "";
+    if (view.status === "empty" || !view.path) {
+      title.textContent = "No file open";
+      title.removeAttribute("title");
+      return;
+    }
+    title.title = view.path;
+    if (view.status !== "raw") {
+      title.textContent = fileNameFromPath(view.path);
+      return;
+    }
+    title.textContent = entryTitle(view.draft) || "Untitled";
+    const when = captureStamp(view.path);
+    if (when) {
+      meta.hidden = false;
+      meta.textContent = when;
+    }
+  }
+
+  function captureStamp(filePath) {
+    const match = CAPTURE_NAME.exec(fileNameFromPath(filePath));
+    if (!match) {
+      return "";
+    }
+    const year = Number(match[1]);
+    const shown = new Date(
+      year,
+      Number(match[2]) - 1,
+      Number(match[3]),
+      Number(match[4]),
+      Number(match[5])
+    );
+    const sameYear = year === new Date().getFullYear();
+    const day = shown.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: sameYear ? undefined : "numeric",
+    });
+    const hours = Number(match[4]);
+    const minutes = String(match[5]).padStart(2, "0");
+    const period = hours >= 12 ? "PM" : "AM";
+    const hour12 = hours % 12 || 12;
+    return `${day} · ${hour12}:${minutes} ${period}`;
   }
 
   function clearSaveTimer() {
@@ -131,8 +180,7 @@ export function mountEditor(root) {
   }
 
   function render() {
-    const showPath = view.status === "empty" ? null : view.path;
-    setTitle(showPath);
+    paintHeading();
 
     if (view.status !== "raw") {
       mountedPath = null;
@@ -181,6 +229,7 @@ export function mountEditor(root) {
     textarea.value = view.draft;
     textarea.addEventListener("input", () => {
       view.draft = textarea.value;
+      paintHeading();
       paintLineNumbers(gutter, view.draft);
       scheduleSave();
     });

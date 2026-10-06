@@ -1,6 +1,7 @@
 import { selectFile } from "../../commands.js";
 import { getState, subscribe } from "../../state.js";
 import { focusById } from "../../utils/captureFocuses.js";
+import { entryTitle } from "../../utils/entryTitle.js";
 
 const CAPTURE_NAME =
   /^(\d{4})-(\d{2})-(\d{2}) (\d{2})\.(\d{2}) Note(?: \((\d+)\))?\.md$/;
@@ -128,8 +129,14 @@ export function mountSidebar(root) {
       childList.className = "sidebar__tree";
       for (const note of day.notes) {
         const suffix = note.suffix > 0 ? ` (${note.suffix})` : "";
-        const labelText = `${formatTime(note.hours, note.minutes)}${suffix}`;
-        childList.append(renderFile(note.node, depth + 1, labelText));
+        childList.append(
+          renderFile(
+            note.node,
+            depth + 1,
+            entryTitle(note.node.preview) || "Untitled",
+            `${formatTime(note.hours, note.minutes)}${suffix}`
+          )
+        );
       }
       item.append(childList);
     }
@@ -137,7 +144,7 @@ export function mountSidebar(root) {
     return item;
   }
 
-  function renderFile(node, depth, labelText) {
+  function renderFile(node, depth, labelText, metaText) {
     const item = document.createElement("li");
     item.className = "sidebar__item sidebar__item--file";
     item.dataset.path = node.path;
@@ -169,8 +176,18 @@ export function mountSidebar(root) {
 
     const label = document.createElement("span");
     label.className = "sidebar__label";
+    if (metaText) {
+      label.classList.add("sidebar__label--title");
+    }
     label.textContent = labelText;
     row.append(label);
+
+    if (metaText) {
+      const meta = document.createElement("span");
+      meta.className = "sidebar__meta";
+      meta.textContent = metaText;
+      row.append(meta);
+    }
 
     row.addEventListener("click", () => {
       selectFile(node.path);
@@ -209,6 +226,10 @@ export function mountSidebar(root) {
         return;
       }
       nodes = Array.isArray(tree) ? tree : [];
+      await attachCaptureTitles(nodes);
+      if (token !== loadToken) {
+        return;
+      }
       if (resetExpansion) {
         expandedPaths.clear();
         dayOpen.clear();
@@ -246,6 +267,34 @@ export function mountSidebar(root) {
  * Notes are newest day, then newest time, then highest (n) suffix.
  * @param {Array<{ type: string, name: string, path: string, children?: unknown[] }>} children
  */
+async function attachCaptureTitles(list) {
+  const pending = [];
+  function walk(items) {
+    for (const node of items || []) {
+      if (node.type === "dir") {
+        walk(node.children);
+        continue;
+      }
+      if (node.type === "file" && CAPTURE_NAME.test(node.name) && !entryTitle(node.preview || "")) {
+        pending.push(node);
+      }
+    }
+  }
+  walk(list);
+  await Promise.all(
+    pending.map(async (node) => {
+      try {
+        const result = await window.smartnote.readFile(node.path);
+        if (result?.ok) {
+          node.preview = result.content;
+        }
+      } catch {
+        // Leave the row untitled when the note cannot be read.
+      }
+    })
+  );
+}
+
 function groupForDisplay(children) {
   const dirs = [];
   const others = [];

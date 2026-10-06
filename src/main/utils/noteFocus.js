@@ -5,13 +5,13 @@ const CAPTURE_NAME =
 const PEEK_BYTES = 1024;
 
 /**
- * Focus id from a capture note's frontmatter, or null when the file is not tagged.
+ * Focus id and the start of a capture note, or null when the name is not one.
  * Only the head of the file is read.
  * @param {string} filePath
  * @param {string} fileName
- * @returns {Promise<string | null>}
+ * @returns {Promise<{ focus: string | null, preview: string } | null>}
  */
-async function peekCaptureFocus(filePath, fileName) {
+async function peekCaptureNote(filePath, fileName) {
   if (!CAPTURE_NAME.test(fileName)) {
     return null;
   }
@@ -21,7 +21,11 @@ async function peekCaptureFocus(filePath, fileName) {
     handle = await fs.open(filePath, "r");
     const buffer = Buffer.alloc(PEEK_BYTES);
     const { bytesRead } = await handle.read(buffer, 0, PEEK_BYTES, 0);
-    return parseFocusId(buffer.toString("utf8", 0, bytesRead));
+    const head = buffer.toString("utf8", 0, bytesRead);
+    return {
+      focus: parseFocusId(head),
+      preview: head,
+    };
   } catch {
     return null;
   } finally {
@@ -55,4 +59,4 @@ function parseFocusId(head) {
   return null;
 }
 
-module.exports = { peekCaptureFocus };
+module.exports = { peekCaptureNote };
