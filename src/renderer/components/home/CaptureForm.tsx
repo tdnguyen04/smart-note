@@ -1,16 +1,22 @@
+import { Check } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { COPY, TIMINGS_MS, type FocusId } from "../../../shared/globals";
 import { composeFrontmatter } from "../../../shared/focus";
-import { refreshTree } from "../../commands";
+import { noteLanded, refreshTree } from "../../commands";
 import { getState, useAppState } from "../../state";
 import { Button } from "../../ui/button";
 import { cx } from "../../ui/cx";
-import { armSavedSound } from "./savedSound";
+import { flyNote } from "../../ui/flight";
+import { Icon } from "../../ui/icon";
+import { playSaveChime, warmUpChime } from "./saveChime";
 
 /**
  * The text box and Save button. The draft lives here, not in Home, so a keystroke
  * re-renders this small form and nothing else (the tags and hint are passed in as
  * elements Home already built, which React reuses as-is).
+ *
+ * A save is rewarded three ways at once: a chime, the button turning into "Saved",
+ * and the note's card flying into Organize, which then counts it on the rail badge.
  */
 
 type CaptureFormProps = {
@@ -55,22 +61,28 @@ export function CaptureForm({ focusId, saving, onSavingChange, onSaved, hint, hi
     if (!draft.trim() || saving || !vaultPath) {
       return;
     }
-    // Arm the sound inside the click/keypress, while the browser still allows audio to start.
-    const playSavedSound = armSavedSound();
+    // Where the text sits now is where its card takes off from.
+    const takeoff = inputRef.current?.getBoundingClientRect();
+    const text = draft;
     onSavingChange(true);
     setError("");
     try {
-      const result = await window.smartnote.createNote(vaultPath, composeFrontmatter({ focusId, body: draft }));
+      const result = await window.smartnote.createNote(vaultPath, composeFrontmatter({ focusId, body: text }));
       if (!result.ok) {
         setError(result.message || COPY.home.saveFailed);
         return;
       }
+      playSaveChime();
       setDraft("");
       setJustSaved(true);
       onSaved(result.path);
       refreshTree();
-      playSavedSound();
       focusInputSoon(inputRef.current);
+      if (takeoff) {
+        void flyNote({ from: takeoff, text, to: "organize" }).then(noteLanded);
+      } else {
+        noteLanded();
+      }
     } catch (caught) {
       console.error(caught);
       setError(COPY.home.saveFailed);
@@ -99,6 +111,8 @@ export function CaptureForm({ focusId, saving, onSavingChange, onSaved, hint, hi
           spellCheck
           rows={4}
           onChange={(event) => {
+            // Opening the audio device while the person writes means the chime is instant on save.
+            warmUpChime();
             setDraft(event.target.value);
             if (error) {
               setError("");
@@ -124,7 +138,14 @@ export function CaptureForm({ focusId, saving, onSavingChange, onSaved, hint, hi
           title={`${COPY.home.save} (Ctrl+Enter)`}
           onClick={() => void save()}
         >
-          {COPY.home.save}
+          {justSaved ? (
+            <>
+              <Icon icon={Check} />
+              {COPY.home.savedButton}
+            </>
+          ) : (
+            COPY.home.save
+          )}
         </Button>
       </div>
     </>

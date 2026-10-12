@@ -105,6 +105,29 @@ export const TIMINGS_MS = {
   tooltipDelay: 450,
   /** Moving to the next tooltip within this window opens it at once. */
   tooltipSkipDelay: 250,
+  /** A saved note's card gliding from the capture box to the Organize icon. */
+  noteFlight: 750,
+} as const;
+
+/**
+ * The save chime: two soft bell notes a fifth apart (E5 then B5), the familiar
+ * "done" interval. Synthesized at play time; there is no audio file.
+ */
+export const SAVE_CHIME = {
+  /** Master volume, 0..1. */
+  volume: 0.32,
+  /** Scheduled this far ahead so the first note is never cut off while audio starts. */
+  leadMs: 40,
+  notes: [
+    { hz: 659.25, delayMs: 0, decayMs: 320, level: 0.8 },
+    { hz: 987.77, delayMs: 85, decayMs: 560, level: 1 },
+  ],
+  /** Overtones that make a sine sound like a mallet on wood or metal. */
+  partials: [
+    { ratio: 1, level: 1 },
+    { ratio: 2, level: 0.25 },
+    { ratio: 3.9, level: 0.12 },
+  ],
 } as const;
 
 export const TEXT_EXTENSIONS = [
@@ -147,6 +170,8 @@ export const COPY = {
     label: "App rail",
     compose: "Compose",
     organize: "Organize",
+    newNote: "new note",
+    newNotes: "new notes",
     profile: "Profile",
   },
   toolbar: {
@@ -171,6 +196,7 @@ export const COPY = {
     placeholder: "A claim, a passage, or a point from your research…",
     inputLabel: "Record a source",
     save: "Save",
+    savedButton: "Saved",
     saved: "Saved.",
     openInOrganize: "Open in Organize",
     dismiss: "Dismiss",

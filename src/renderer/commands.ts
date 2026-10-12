@@ -25,6 +25,7 @@ export function enterOrganize(): void {
     mode: "organize",
     sidebarOpen: true,
     selectedFilePath: null,
+    unseenCaptures: 0,
   });
 }
 
@@ -33,6 +34,7 @@ export function enterOnboarding(): void {
     vaultPath: null,
     selectedFilePath: null,
     mode: "onboarding",
+    unseenCaptures: 0,
   });
 }
 
@@ -64,5 +66,15 @@ export function openCapturedNote(path: string | null | undefined): void {
     mode: "organize",
     sidebarOpen: true,
     selectedFilePath: path,
+    unseenCaptures: 0,
   });
+}
+
+/** A captured note has reached Organize (after its flight, if any): count it on the rail badge. */
+export function noteLanded(): void {
+  const current = getState();
+  if (!current.vaultPath) {
+    return;
+  }
+  updateState({ unseenCaptures: current.unseenCaptures + 1 });
 }

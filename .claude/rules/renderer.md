@@ -9,9 +9,9 @@ The screen is a picture of state. React renders it; CodeMirror owns the note tex
 
 ## State
 
-- Shared facts live in `state/store.ts`: `mode`, `vaultPath`, `sidebarOpen`, `selectedFilePath`, `treeEpoch`. The snapshot is replaced on every write, never mutated.
+- Shared facts live in `state/store.ts`: `mode`, `vaultPath`, `sidebarOpen`, `selectedFilePath`, `treeEpoch`, `unseenCaptures`. The snapshot is replaced on every write, never mutated.
 - Read with `useAppState(selector)`. It re-renders only when the selected value changes (`Object.is`), so return a primitive: `s => s.selectedFilePath === path`, not `s => s`. Outside React, read with `getState()`.
-- `commands.ts` holds one synchronous outcome per function (`enterHome`, `enterOrganize`, `enterOnboarding`, `toggleSidebar`, `selectFile`, `refreshTree`, `openCapturedNote`). Writing the same `vaultPath` again does not reload the tree; call `refreshTree`.
+- `commands.ts` holds one synchronous outcome per function (`enterHome`, `enterOrganize`, `enterOnboarding`, `toggleSidebar`, `selectFile`, `refreshTree`, `openCapturedNote`, `noteLanded`). Writing the same `vaultPath` again does not reload the tree; call `refreshTree`.
 - Region-private state stays in the region: tree data and expansion (sidebar), note text (editor), capture draft (`home/CaptureForm`), menus, onboarding tip.
 
 ## Frame and regions
@@ -26,11 +26,12 @@ The screen is a picture of state. React renders it; CodeMirror owns the note tex
 - Editor: create the `EditorView` once; switch notes with `view.setState`. Never put note text in React state. Autosave (`editor/autosave.ts`) and the header title run outside React.
 - Tree: `treeModel.ts` is pure and tested. `mergeTree` keeps unchanged nodes' identity across reloads, and rows are `memo` components that get primitives, a node and stable callbacks.
 - Put fast-changing state in the smallest component that shows it (example: `CaptureForm` owns the draft, not `Home`).
+- One-off animations that cross regions (the saved note flying to Organize) run imperatively in `ui/flight` on the Web Animations API, not through React state. Landing spots are marked `data-flight-target`.
 - Prefer CSS over state for hover and focus effects (example: the focus chips light up through `group-has-[[data-topic-hint]:hover]`).
 
 ## Design system
 
 - Styling is Tailwind utilities built from `styles/tokens.css`. Default Tailwind colors, fonts, sizes, radii and shadows do not exist. Need a new value? Add a token.
 - Light and dark come from the same token names; never branch on the theme in TypeScript. Focus tag colors use `focusTagStyle` + the `tag-color` utility.
-- Use `ui/` primitives: `Icon` (Lucide, sizes sm/md/lg, 1.75 stroke), `IconButton` (always labelled, tooltip by default), `Button` (the one filled action), `Menu`/`MenuItem`, `Tooltip`.
+- Use `ui/` primitives: `Icon` (Lucide, sizes sm/md/lg, 1.75 stroke), `IconButton` (always labelled, tooltip by default), `Button` (the one filled action), `Menu`/`MenuItem`, `Tooltip`, `flyNote`.
 - Copy lives in `COPY` in `shared/globals.ts`. Sentence case, no all-caps labels.

@@ -9,6 +9,11 @@ import { IconButton } from "../../ui/button";
 
 export const Rail = memo(function Rail() {
   const mode = useAppState((s) => s.mode);
+  const unseen = useAppState((s) => s.unseenCaptures);
+  const organizeLabel =
+    unseen > 0
+      ? `${COPY.rail.organize}, ${String(unseen)} ${unseen === 1 ? COPY.rail.newNote : COPY.rail.newNotes}`
+      : COPY.rail.organize;
 
   return (
     <nav
@@ -23,14 +28,26 @@ export const Rail = memo(function Rail() {
         pressed={mode === "home"}
         onClick={enterHome}
       />
-      <IconButton
-        icon={FolderTree}
-        label={COPY.rail.organize}
-        size="md"
-        tooltipSide="right"
-        pressed={mode === "organize"}
-        onClick={enterOrganize}
-      />
+      {/* Saved notes fly here (ui/flight) and are counted until Organize is opened. */}
+      <div className="relative" data-flight-target="organize">
+        <IconButton
+          icon={FolderTree}
+          label={organizeLabel}
+          size="md"
+          tooltipSide="right"
+          pressed={mode === "organize"}
+          onClick={enterOrganize}
+        />
+        {unseen > 0 && (
+          <span
+            key={unseen}
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-1 -right-1 h-4 min-w-4 animate-pop rounded-full bg-ink px-1 text-center text-2xs leading-4 font-semibold text-surface tabular-nums"
+          >
+            {unseen > 9 ? "9+" : unseen}
+          </span>
+        )}
+      </div>
       <div className="mt-auto">
         {/* Placeholder: profile has no screen yet. */}
         <IconButton icon={CircleUser} label={COPY.rail.profile} size="md" tooltipSide="right" />

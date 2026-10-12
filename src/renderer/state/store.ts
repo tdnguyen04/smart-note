@@ -16,6 +16,8 @@ export type AppState = {
   selectedFilePath: string | null;
   /** Bumped to ask the sidebar to reload the tree for the same vault. */
   treeEpoch: number;
+  /** Notes captured since the person last opened Organize; the rail shows it as a badge. */
+  unseenCaptures: number;
 };
 
 export type StatePatch = Partial<AppState>;
@@ -26,6 +28,7 @@ let state: Readonly<AppState> = {
   sidebarOpen: false,
   selectedFilePath: null,
   treeEpoch: 0,
+  unseenCaptures: 0,
 };
 
 const listeners = new Set<() => void>();
