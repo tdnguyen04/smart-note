@@ -1,7 +1,13 @@
 import { enterHome, enterOnboarding } from "../commands";
 import type { SettingsPatch, VaultDialogOptions } from "../../shared/ipc";
 import { getState, updateState } from "../state";
-import { isSamePath } from "../../utils/paths";
+import { isSamePath } from "../../shared/paths";
+
+/**
+ * Opening, replacing, restoring and forgetting the vault folder: the multi-step flow
+ * (dialog, inspect, warn once about non-notes, save settings, enter Home) that the
+ * onboarding screen, the toolbar menu and the Home folder link all start.
+ */
 
 async function establishSession(newPath: string | null | undefined): Promise<boolean> {
   if (!newPath) {

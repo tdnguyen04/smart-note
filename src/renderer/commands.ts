@@ -1,5 +1,11 @@
 import { getState, updateState } from "./state";
 
+/**
+ * Synchronous outcomes several regions must agree on, one per function. With
+ * transactions/*, the only writers of app state. Nothing here waits on disk; a flow
+ * that does belongs in transactions/.
+ */
+
 export function enterHome(): void {
   if (!getState().vaultPath) {
     return;

@@ -1,44 +1,121 @@
-:root {
-  /* Monochrome palette */
-  --color-bg: #ffffff;
-  --color-bg-muted: #f4f4f4;
-  --color-bg-hover: #ececec;
-  --color-bg-selected: #e2e2e2;
-  --color-fg: #111111;
-  --color-fg-muted: #666666;
-  --color-fg-subtle: #999999;
-  --color-border: #d6d6d6;
-  --color-border-strong: #222222;
-  --color-focus: #111111;
+/*
+ * Design tokens: the only place colors, type, radii, shadows and frame sizes are decided.
+ * Tailwind turns each token into utilities (`--color-ink` -> `text-ink`, `--spacing-rail` -> `w-rail`).
+ * Tailwind's default palette, fonts, sizes, radii and shadows are cleared, so a class that is
+ * not built from a token here does not exist. Add a token before reaching for a new value.
+ *
+ * Contrast (checked): body text >= 7:1, muted >= 4.5:1, subtle >= 4.5:1 on surface and
+ * surface-muted, in both themes. Window chrome colors must match WINDOW_CHROME in globals.ts.
+ */
+
+@theme {
+  /* Color: light theme. Dark overrides follow below. */
+  --color-*: initial;
+  --color-surface: #ffffff; /* page, editor, inputs */
+  --color-surface-muted: #f5f5f4; /* rail, sidebar, hint bar */
+  --color-surface-hover: #ebebea;
+  --color-surface-selected: #e0e0de;
+  --color-ink: #1a1a1a; /* body text, primary button */
+  --color-ink-muted: #595959; /* secondary text, idle icons */
+  --color-ink-subtle: #6b6b6b; /* meta: times, placeholders */
+  --color-line: #dadad8; /* hairlines between regions */
+  --color-line-strong: #2b2b2b; /* the capture box outline */
+  --color-focus: #1a1a1a; /* keyboard focus ring */
+  --color-accent: #4f7a99; /* the hint bulb, the only non-tag color */
   --color-success: #1f7a3a;
+  --color-danger: #b42318;
+  --color-inverse: #202124; /* the saved toast */
+  --color-on-inverse: #ffffff;
+  --color-inverse-accent: #8ab4f8;
+  --color-transparent: transparent;
+  --color-current: currentColor;
 
-  /* Typography */
-  --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", "Consolas", "Courier New", monospace;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.125rem;
-  --line-height-tight: 1.3;
-  --line-height-body: 1.5;
+  /* Type: Plex Sans for the interface, Plex Serif for what the person writes. */
+  --font-*: initial;
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "IBM Plex Serif", Georgia, serif;
+  --font-mono: "IBM Plex Mono", Consolas, monospace;
 
-  /* Spacing */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
+  --text-*: initial;
+  --text-2xs: 0.6875rem; /* 11px: times beside a note */
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem; /* 12px: tags, day groups, hints */
+  --text-xs--line-height: 1.1rem;
+  --text-sm: 0.8125rem; /* 13px: tree rows, menus */
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem; /* 14px: interface default */
+  --text-base--line-height: 1.375rem;
+  --text-md: 1rem; /* 16px: writing */
+  --text-md--line-height: 1.6rem;
+  --text-lg: 1.375rem; /* 22px: page headline */
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 2rem; /* 32px: the app name on onboarding */
+  --text-xl--line-height: 2.5rem;
 
-  /* Layout */
-  --titlebar-height: 36px;
-  --rail-width: 3rem;
-  --toolbar-height: 2.5rem;
-  --sidebar-width: 16rem;
-  --sidebar-min-width: 10rem;
-  --sidebar-max-width: 28rem;
-  --border-width: 1px;
-  --radius-sm: 2px;
-  --radius-lg: 4px;
-  --radius-xl: 8px;
+  /* Shape: radius grows with the size of the thing it rounds. */
+  --radius-*: initial;
+  --radius-sm: 4px; /* buttons, rows, chips' menus */
+  --radius-md: 6px; /* menus, tooltips */
+  --radius-lg: 10px; /* the capture box, the toast */
+
+  --shadow-*: initial;
+  --shadow-popover: 0 6px 20px rgb(0 0 0 / 10%);
+  --shadow-toast: 0 6px 20px rgb(0 0 0 / 24%);
+
+  /* Frame sizes (spacing scale stays Tailwind's 4px steps). */
+  --spacing-titlebar: 36px; /* matches WINDOW_CHROME.titlebarHeight */
+  --spacing-window-controls: 140px; /* room for the native min / max / close */
+  --spacing-rail: 3rem;
+  --spacing-toolbar: 2.5rem;
+  --spacing-sidebar: 16rem;
+  --spacing-capture: 30rem;
+
+  --animate-fade-in: fade-in 160ms ease-out;
+  --animate-attention: attention 1.1s ease-out 2;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes attention {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-ink) 28%, transparent);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 8px transparent;
+    }
+  }
+}
+
+/* Native controls and scrollbars follow the theme too. */
+:root {
+  color-scheme: light;
+}
+
+/* Dark theme: same names, so no component knows which theme is showing. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface: #1b1b1d;
+    --color-surface-muted: #212124;
+    --color-surface-hover: #2b2b2f;
+    --color-surface-selected: #36363b;
+    --color-ink: #ececec;
+    --color-ink-muted: #b4b4b9;
+    --color-ink-subtle: #93939a;
+    --color-line: #34343a;
+    --color-line-strong: #c8c8cc;
+    --color-focus: #ececec;
+    --color-accent: #8ab4d4;
+    --color-success: #5cb87a;
+    --color-danger: #f0857a;
+    --color-inverse: #ececec;
+    --color-on-inverse: #1b1b1d;
+    --color-inverse-accent: #1a5fb4;
+    --shadow-popover: 0 6px 20px rgb(0 0 0 / 45%);
+    --shadow-toast: 0 6px 20px rgb(0 0 0 / 50%);
+    color-scheme: dark;
+  }
 }

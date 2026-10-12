@@ -9,7 +9,10 @@ export type Mode = (typeof MODES)[number];
 export type FocusDef = {
   id: string;
   label: string;
+  /** Tag color on the light theme. */
   color: string;
+  /** Same hue, lifted so it keeps 3:1 contrast on the dark theme. */
+  colorDark: string;
   prompts: readonly string[];
 };
 
@@ -18,6 +21,7 @@ export const FOCUSES = [
     id: "literature",
     label: "Literature Insight",
     color: "#3d6b8c",
+    colorDark: "#7fa8c6",
     prompts: [
       "What claim is this source actually making?",
       "Which passage is worth keeping, and why?",
@@ -27,6 +31,7 @@ export const FOCUSES = [
     id: "research",
     label: "Research Idea",
     color: "#2a6f4e",
+    colorDark: "#6fb592",
     prompts: [
       "What question is this idea trying to answer?",
       "What would you need in order to test this?",
@@ -36,6 +41,7 @@ export const FOCUSES = [
     id: "lecture",
     label: "Lecture Note",
     color: "#8a6232",
+    colorDark: "#c99a62",
     prompts: [
       "What was the main argument of this lecture?",
       "What should you be able to explain after this session?",
@@ -45,6 +51,7 @@ export const FOCUSES = [
     id: "question",
     label: "Open Question",
     color: "#a33d55",
+    colorDark: "#d9798f",
     prompts: [
       "What is still unresolved?",
       "What evidence would change your mind?",
@@ -54,6 +61,7 @@ export const FOCUSES = [
     id: "synthesis",
     label: "Synthesis",
     color: "#4d5d73",
+    colorDark: "#9aa9bd",
     prompts: [
       "How does this connect to something you already know?",
       "What is the through-line across these sources?",
@@ -78,11 +86,25 @@ export const CAPTURE_NAME = {
   duplicateSuffix: ")",
 } as const;
 
+/**
+ * Native window chrome. These must match `surface` and `ink` in
+ * src/renderer/styles/tokens.css, because the OS paints them before the page loads.
+ */
+export const WINDOW_CHROME = {
+  titlebarHeight: 36,
+  light: { background: "#ffffff", symbol: "#1a1a1a" },
+  dark: { background: "#1b1b1d", symbol: "#ececec" },
+} as const;
+
 export const TIMINGS_MS = {
   autosave: 400,
   successFlash: 1200,
   nudge: 5000,
   onboardingHint: 3200,
+  /** Hover time before a tooltip opens. */
+  tooltipDelay: 450,
+  /** Moving to the next tooltip within this window opens it at once. */
+  tooltipSkipDelay: 250,
 } as const;
 
 export const TEXT_EXTENSIONS = [
@@ -116,6 +138,28 @@ export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];
 
 export const COPY = {
   sidebarEmpty: "Nothing here yet",
+  sidebarRegion: "Files",
+  titlebar: {
+    showSidebar: "Show file sidebar",
+    hideSidebar: "Hide file sidebar",
+  },
+  rail: {
+    label: "App rail",
+    compose: "Compose",
+    organize: "Organize",
+    profile: "Profile",
+  },
+  toolbar: {
+    settings: "Settings",
+    changeFolder: "Change folder",
+    resetFolder: "Reset saved folder",
+  },
+  sidebar: {
+    label: "Notes",
+    today: "Today",
+    yesterday: "Yesterday",
+    untitled: "Untitled",
+  },
   home: {
     headline: "Record a source",
     savingTo: "Saving to ",
@@ -142,6 +186,7 @@ export const COPY = {
     tipLabel: "Tip: ",
   },
   editor: {
+    textLabel: "Note text",
     noFile: "No file open",
     untitled: "Untitled",
     selectFile: "Select a file to read it.",

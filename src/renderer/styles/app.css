@@ -1,0 +1,88 @@
+/*
+ * The renderer's one stylesheet. Components style themselves with token utilities;
+ * this file only holds what no single component owns: fonts, the token import,
+ * document-wide base rules, and the focus-tag color utilities.
+ */
+
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* Fonts ship with the app: no network request and no flash of fallback text. */
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-serif/400.css";
+@import "@fontsource/ibm-plex-serif/400-italic.css";
+@import "@fontsource/ibm-plex-serif/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+
+/*
+ * Focus tag color. A component sets --tag-light and --tag-dark from FOCUSES
+ * (see ui/focusTag); these utilities pick the one for the current theme.
+ */
+@utility tag-color {
+  --tag: var(--tag-light);
+
+  @media (prefers-color-scheme: dark) {
+    --tag: var(--tag-dark);
+  }
+}
+
+@utility tag-tint {
+  background-color: color-mix(in srgb, var(--tag) 16%, var(--color-surface));
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button:not(:disabled),
+  [role="menuitem"] {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: var(--color-surface-selected);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
+
+  /* Set by main while a native dialog is open: block the pointer, keep the keyboard. */
+  body.is-dialog-open,
+  body.is-dialog-open * {
+    pointer-events: none !important;
+    cursor: default !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
