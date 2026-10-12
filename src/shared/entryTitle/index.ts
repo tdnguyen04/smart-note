@@ -1,0 +1,1 @@
+export { formatEntryTitle } from "./entryTitle";

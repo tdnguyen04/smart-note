@@ -5,20 +5,21 @@
   "license": "ISC",
   "author": "tdnguyen04",
   "type": "commonjs",
-  "main": "src/main/main.js",
+  "main": "out/main/index.js",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder --win",
-    "dist:linux": "electron-builder --linux",
-    "pack": "electron-builder --dir"
+    "start": "electron-vite dev",
+    "build": "electron-vite build",
+    "dist": "electron-vite build && electron-builder --win",
+    "dist:linux": "electron-vite build && electron-builder --linux",
+    "pack": "electron-vite build && electron-builder --dir",
+    "check": "tsc --noEmit && eslint . && vitest run"
   },
   "build": {
     "appId": "com.tdnguyen.smartnote",
-    "productName": "SmartNote",
+    "productName": "Folio",
     "copyright": "Copyright © 2026",
     "files": [
-      "src/**/*",
-      "assets/**/*",
+      "out/**/*",
       "package.json"
     ],
     "directories": {
@@ -43,11 +44,40 @@
       "createStartMenuShortcut": true
     }
   },
-  "dependencies": {
-  },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
     "electron": "^44.2.0",
     "electron-builder": "^26.15.3",
-    "electron-reload": "^2.0.0-alpha.1"
+    "electron-vite": "^5.0.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "jsdom": "^30.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^7.3.7",
+    "vitest": "^5.0.4"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.14",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/ibm-plex-serif": "^5.3.0",
+    "@lezer/highlight": "^1.2.5",
+    "@radix-ui/react-dropdown-menu": "^2.2.1",
+    "@radix-ui/react-tooltip": "^1.4.1",
+    "lucide-react": "^1.55.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   }
 }
